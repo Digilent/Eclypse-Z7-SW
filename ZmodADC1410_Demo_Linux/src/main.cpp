@@ -3,7 +3,7 @@
  * @author Cosmin Tanislav
  * @author Cristian Fatu
  * @date 15 Nov 2019
- * @brief File containing implementations of the ZMOD ADC1410 specific methods.
+ * @brief File containing the ZMOD ADC1410 linux demo.
  */
 
 #include <stdio.h>
