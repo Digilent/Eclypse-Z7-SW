@@ -1,0 +1,3 @@
+[submodule "zmodlib"]
+	path = zmodlib
+	url = https://github.com/Digilent/zmodlib.git

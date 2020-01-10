@@ -1,0 +1,6 @@
+eclipse.preferences.version=1
+environment/project/xilinx.gnu.armv7.linux.exe.debug.171073143/SYSROOT/delimiter=\:
+environment/project/xilinx.gnu.armv7.linux.exe.debug.171073143/SYSROOT/operation=append
+environment/project/xilinx.gnu.armv7.linux.exe.debug.171073143/SYSROOT/value=/home/cosmin/work/eclypse_z7/os/build/tmp/sysroots/plnx-zynq7
+environment/project/xilinx.gnu.armv7.linux.exe.debug.171073143/append=true
+environment/project/xilinx.gnu.armv7.linux.exe.debug.171073143/appendContributed=true
