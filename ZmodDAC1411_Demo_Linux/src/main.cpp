@@ -25,25 +25,66 @@
 #define DAC_FLASH_ADDR   	0x31
 #define DAC_DMA_IRQ 		63
 
-ZMODDAC1411 dacZmod(DAC_BASE_ADDR, DAC_DMA_BASE_ADDR, IIC_BASE_ADDR, DAC_FLASH_ADDR,
-		ZMOD_IRQ, DAC_DMA_IRQ);
-
-void dacDemo(uint8_t channel, size_t length) {
-	uint32_t *buffer = dacZmod.allocChannelsBuffer(length);
-	uint32_t value;
-
-	for (size_t i = 0; i < length; i++) {
-		value = dacZmod.arrangeSignedChannelData(0, i * 100) | dacZmod.arrangeSignedChannelData(1, i * 100);
-		buffer[i] = value;
+/*
+ * Simple DAC test, using simple ramp values populated in the buffer.
+* @param offset - the voltage offset for the generated ramp
+* @param amplitude - the amplitude for the generated ramp
+* @param step - the step between two generated samples
+* @param channel - the channel where samples will be generated
+* @param frequencyDivider - the output frequency divider
+* @param gain - the gain for the channel
+*/
+void dacRampDemo(float offset, float amplitude, float step, uint8_t channel, uint8_t frequencyDivider, uint8_t gain)
+{
+	ZMODDAC1411 dacZmod(DAC_BASE_ADDR, DAC_DMA_BASE_ADDR, IIC_BASE_ADDR, DAC_FLASH_ADDR, DAC_DMA_IRQ);
+	uint32_t *buf;
+	float val;
+	uint32_t valBuf;
+	int16_t valRaw;
+	int length = (int)(amplitude/step) << 2;
+	int i;
+	if (length > ((1<<14) - 1))
+	{
+		// limit the length to maximum buffer size (1<<14 - 1)
+		length = ((1<<14) - 1);
+		// adjust step
+		step = amplitude/(length>>2);
 	}
 
-	dacZmod.setData(buffer, length);
-	dacZmod.start();
+	buf = dacZmod.allocChannelsBuffer(length);
 
-	dacZmod.freeDMABuffer(buffer, length);
+	dacZmod.setOutputSampleFrequencyDivider(frequencyDivider);
+	dacZmod.setGain(channel, gain);
+
+	i = 0;
+	// ramp up
+	for(val = -amplitude; val < amplitude; val += step)
+	{
+		valRaw = dacZmod.getSignedRawFromVolt(val + offset, gain);
+		valBuf = dacZmod.arrangeChannelData(channel, valRaw);
+		buf[i++] = valBuf;
+	}
+	// ramp down
+	for(val = amplitude; val > -amplitude; val -= step)
+	{
+		valRaw = dacZmod.getSignedRawFromVolt(val + offset, gain);
+		valBuf = dacZmod.arrangeChannelData(channel, valRaw);
+		buf[i++] = valBuf;
+	}
+
+	// send data to DAC and start the instrument
+	dacZmod.setData(buf, length);
+	dacZmod.start();
 }
 
 int main() {
-	dacDemo(0, TRANSFER_LEN);
+	std::cout << "ZmodDAC1411 Demo";
+	// offset 					2 V
+	// amplitude 				3 V
+	// step 					10 mV
+	// channel 					A
+	// Output Frequency Divider	2
+	// gain						HIGH
+	dacRampDemo(2, 3, 0.01, 0, 2, 1);
 	return 0;
 }
