@@ -44,9 +44,11 @@ void testZMODADC1410Ramp_Auto()
 
 /*
  * Format data contained in the buffer and sends it over UART.
+ * It displays the acquired value (in mV), raw value (as 14 bits hexadecimal value)
+ * and time stamp within the buffer (in time units).
  * @param padcZmod - pointer to the ZMODADC1410 object
  * @param acqBuffer - the buffer containing acquired data
- * @param channel - the channel where samples will be acquired
+ * @param channel - the channel where samples were acquired
  * @param gain - the gain for the channel
  * @param length	- the buffer length to be used
  */
@@ -57,7 +59,6 @@ void formatADCDataOverUART(ZMODADC1410 *padcZmod, uint32_t *acqBuffer, uint8_t c
 	uint32_t valBuf;
 	int16_t valCh;
 	float val;
-
 	xil_printf("New acquisition ------------------------\r\n");
 	xil_printf("Ch1\tRaw\tTime\t\r\n");
 	for (size_t i = 0; i < length; i++)
@@ -90,19 +91,23 @@ void formatADCDataOverUART(ZMODADC1410 *padcZmod, uint32_t *acqBuffer, uint8_t c
 void adcDemo(uint8_t channel, uint8_t gain, size_t length) {
 	ZMODADC1410 adcZmod(ZMOD_ADC_BASE_ADDR, DMA_ADC_BASE_ADDR, IIC_BASE_ADDR, FLASH_ADDR_ADC,
 			ZMOD_ADC_IRQ, DMA_ADC_IRQ);
-	uint32_t *acqBuffer = adcZmod.allocChannelsBuffer(length);
+	uint32_t *acqBuffer;
 	adcZmod.setGain(channel, gain);
 	while(1)
 	{
+		acqBuffer = adcZmod.allocChannelsBuffer(length);
 		adcZmod.acquireImmediatePolling(acqBuffer, length);
 
 		formatADCDataOverUART(&adcZmod, acqBuffer, channel, gain, length);
+		adcZmod.freeDMABuffer(acqBuffer, length);
 		sleep(2);
 	}
-	adcZmod.freeDMABuffer(acqBuffer, length);
 
 }
 
+/*
+ * ADC Baremetal Demo
+ */
 int main() {
 	// channel 					A
 	// gain						HIGH
