@@ -28,49 +28,73 @@
 ZMODADC1410 adcZmod(ADC_BASE_ADDR, ADC_DMA_BASE_ADDR, IIC_BASE_ADDR, ADC_FLASH_ADDR,
 		ZMOD_IRQ, ADC_DMA_IRQ);
 
-void writeDataToFile(std::string filename, uint32_t *firstBuffer, uint32_t *secondBuffer, uint8_t channel, size_t length) {
+/*
+ * Format data contained in the buffer and writes it to a file and to the standard output.
+ * The file is overwritten any time the function is called.
+ * @param filename - the file name to contain the acquisition formatted data
+ * @param acqBuffer - the buffer containing acquired data
+ * @param channel - the channel where samples were acquired
+ * @param gain - the gain for the channel
+ * @param length	- the buffer length to be used
+ */
+void writeADCData(std::string filename, uint32_t *acqBuffer, uint8_t channel, uint8_t gain, size_t length) {
+	char val_formatted[15];
+	char time_formatted[15];
 	std::ofstream file(filename);
-	int32_t value;
-	float time;
+	int16_t valCh;
+	float val;
+	file << "Time, Channel\n";
 
-	file << "Time (s),Channel 1 (V),Channel 2 (V)\n";
 	for (size_t i = 0; i < length; i++) {
-		time = i / 100000000.0;
-		file << time;
+		if (i < 100)
+		{
+			adcZmod.formatValue(time_formatted, i*10, "ns");
+		}
+		else
+		{
+			adcZmod.formatValue(time_formatted, (float)(i)/100.0, "us");
+		}
 
-		value = adcZmod.signedChannelData(channel, firstBuffer[i]);
-		file << "," << value;
+		valCh = adcZmod.signedChannelData(channel, acqBuffer[i]);
+		val = adcZmod.getVoltFromSignedRaw(valCh, gain);
+		adcZmod.formatValue(val_formatted, 1000.0*val, "mV");
 
-		value = adcZmod.signedChannelData(channel, secondBuffer[i]);
-		file << "," << value;
+		file << time_formatted << ", " << val_formatted << "\n";
+		std::cout << time_formatted << ", " << val_formatted << "\n";
+	}
+	file.close();
+}
 
-		file << "\n";
+/*
+ * Performs (repeatedly) un-triggered acquisitions and writes the data to a file and to the standard output.
+ * The file only contains the content of one acquisition, as it is overwritten.
+ * @param channel - the channel where samples were acquired
+ * @param gain - the gain for the channel
+ * @param length	- the buffer length to be used
+ */
+void adcDemo(uint8_t channel, uint8_t gain, size_t length) {
+	uint32_t *acqBuffer;
+	adcZmod.setGain(channel, gain);
+	while(1)
+	{
+		acqBuffer = adcZmod.allocChannelsBuffer(length);
+		adcZmod.acquireImmediatePolling(acqBuffer, length);
+		writeADCData("/home/root/buffer_data.csv", acqBuffer, channel, gain, length);
+		adcZmod.freeDMABuffer(acqBuffer, length);
+		sleep(2);
 	}
 }
 
-void printData(uint32_t* buffer, uint8_t channel, size_t length) {
-	int32_t value;
 
-	for (size_t i = 0; i < length; i++) {
-		value = adcZmod.signedChannelData(channel, buffer[i]);
-		std::cout << value << "\n";
-	}
-}
-
-void adcDemo(uint8_t channel, size_t length) {
-	uint32_t *firstBuffer = adcZmod.allocChannelsBuffer(length);
-	uint32_t *secondBuffer = adcZmod.allocChannelsBuffer(length);
-
-	adcZmod.acquireImmediatePolling(firstBuffer, length);
-	adcZmod.acquireImmediatePolling(secondBuffer, length);
-
-	writeDataToFile("buffer_data.csv", firstBuffer, secondBuffer, channel, length);
-
-	adcZmod.freeDMABuffer(firstBuffer, length);
-	adcZmod.freeDMABuffer(secondBuffer, length);
-}
-
+/*
+ * ADC Linux Demo
+ */
 int main() {
-	adcDemo(0, TRANSFER_LEN);
+	std::cout << "ZmodADC1410 Demo";
+
+	// channel 					A
+	// gain						HIGH
+	// length					0x400
+	adcDemo(0, 1, TRANSFER_LEN);
 	return 0;
 }
