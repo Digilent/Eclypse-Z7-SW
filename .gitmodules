@@ -1,0 +1,3 @@
+[submodule "zmodlib"]
+	path = zmodlib
+	url = ../zmodlib.git
