@@ -1,0 +1,6 @@
+eclipse.preferences.version=1
+environment/project/xilinx.gnu.armv7.linux.exe.debug.708233018/SYSROOT/delimiter=\:
+environment/project/xilinx.gnu.armv7.linux.exe.debug.708233018/SYSROOT/operation=replace
+environment/project/xilinx.gnu.armv7.linux.exe.debug.708233018/SYSROOT/value=/home/cristian/eclypse/Eclypse-Z7-OS/build/tmp/sysroots/plnx-zynq7
+environment/project/xilinx.gnu.armv7.linux.exe.debug.708233018/append=true
+environment/project/xilinx.gnu.armv7.linux.exe.debug.708233018/appendContributed=true

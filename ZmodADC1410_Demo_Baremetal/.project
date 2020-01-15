@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<projectDescription>
+	<name>ZmodADC1410_Demo_Baremetal</name>
+	<comment>Created by SDK v2019.1. ZmodADC1410_Demo_Baremetal_bsp - ps7_cortexa9_0</comment>
+	<projects>
+		<project>ZmodADC1410_Demo_Baremetal_bsp</project>
+	</projects>
+	<buildSpec>
+		<buildCommand>
+			<name>org.eclipse.cdt.managedbuilder.core.genmakebuilder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
+		<buildCommand>
+			<name>org.eclipse.cdt.managedbuilder.core.ScannerConfigBuilder</name>
+			<triggers>full,incremental,</triggers>
+			<arguments>
+			</arguments>
+		</buildCommand>
+	</buildSpec>
+	<natures>
+		<nature>org.eclipse.cdt.core.cnature</nature>
+		<nature>org.eclipse.cdt.managedbuilder.core.managedBuildNature</nature>
+		<nature>org.eclipse.cdt.managedbuilder.core.ScannerConfigNature</nature>
+		<nature>org.eclipse.cdt.core.ccnature</nature>
+	</natures>
+	<linkedResources>
+		<link>
+			<name>src/zmodlib</name>
+			<type>2</type>
+			<locationURI>WORKSPACE_LOC/zmodlib</locationURI>
+		</link>
+	</linkedResources>
+</projectDescription>
