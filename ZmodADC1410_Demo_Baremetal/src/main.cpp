@@ -99,7 +99,7 @@ void adcDemo(uint8_t channel, uint8_t gain, size_t length) {
 		adcZmod.acquireImmediatePolling(acqBuffer, length);
 
 		formatADCDataOverUART(&adcZmod, acqBuffer, channel, gain, length);
-		adcZmod.freeDMABuffer(acqBuffer, length);
+		adcZmod.freeChannelsBuffer(acqBuffer, length);
 		sleep(2);
 	}
 
