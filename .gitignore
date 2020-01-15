@@ -1,0 +1,69 @@
+*.o
+*.jou
+*.log
+*.str
+*.xpr
+*.Xil
+*.cache
+*.data
+*.runs
+*.hw
+*.zip
+*.html
+*.bit
+*.elf
+*.bin
+*config_settings
+*example_designs
+*.debug
+*~
+
+# sdk exclusions
+.metadata
+**/*RemoteSystemsTempFiles
+**/*Debug
+**/*Release
+**/.metadata
+**/*webtalk
+.sdk
+.temp
+Packages/
+
+# ignore everything in the hw_platform
+*hw_platform*/*
+# except
+!*hw_platform*/*.hdf
+!*hw_platform*/*.bit
+!*hw_platform*/.*project
+
+# ignore everything in the BSP
+*_bsp*/*
+# except
+!*_bsp*/system.mss
+!*_bsp*/Makefile
+!*_bsp*/.*project
+
+# Make sure we keep only xci files in repo ip src subfolder
+repo/*/ip/*/src/*/*
+# Ignore 'generated_ip' directory inside repo/ip
+repo/*/ip/*/generated_ip
+!repo/*/ip/*/src/*/
+!repo/*/ip/*/src/*/*.xci
+!repo/*/ip/*/src/*/*.patch
+!repo/*/ip/*/src/*/*.tcl
+
+# Make sure we keep only xci files in ip src subfolder
+src/ip/*/*
+!src/ip/*/
+!src/ip/*/*.xci
+!src/ip/*/*.prj
+
+# Do not ignore anything in src/others
+!src/others/*
+
+# ignore everything in project folder
+proj/*
+# except this file and project generators
+!proj/create_project.tcl
+!proj/cleanup.cmd
+!proj/cleanup.sh
