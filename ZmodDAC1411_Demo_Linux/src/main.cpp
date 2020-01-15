@@ -75,6 +75,7 @@ void dacRampDemo(float offset, float amplitude, float step, uint8_t channel, uin
 	// send data to DAC and start the instrument
 	dacZmod.setData(buf, length);
 	dacZmod.start();
+	dacZmod.freeChannelsBuffer(buf, length);
 }
 
 int main() {
