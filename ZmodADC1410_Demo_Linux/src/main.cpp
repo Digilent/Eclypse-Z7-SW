@@ -79,7 +79,7 @@ void adcDemo(uint8_t channel, uint8_t gain, size_t length) {
 	{
 		acqBuffer = adcZmod.allocChannelsBuffer(length);
 		adcZmod.acquireImmediatePolling(acqBuffer, length);
-		writeADCData("/home/root/buffer_data.csv", acqBuffer, channel, gain, length);
+		writeADCData("/home/eclypse/buffer_data.csv", acqBuffer, channel, gain, length);
 		adcZmod.freeChannelsBuffer(acqBuffer, length);
 		sleep(2);
 	}
