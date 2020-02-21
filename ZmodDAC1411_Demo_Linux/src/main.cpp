@@ -20,10 +20,10 @@
 #define IIC_BASE_ADDR   0xE0005000
 #define ZMOD_IRQ 		61
 
-#define DAC_BASE_ADDR 		0x43C10000
-#define DAC_DMA_BASE_ADDR 	0x40410000
+#define DAC_BASE_ADDR 		0x43C00000
+#define DAC_DMA_BASE_ADDR 	0x40400000
 #define DAC_FLASH_ADDR   	0x31
-#define DAC_DMA_IRQ 		63
+#define DAC_DMA_IRQ 		61
 
 /*
  * Simple DAC test, using simple ramp values populated in the buffer.
