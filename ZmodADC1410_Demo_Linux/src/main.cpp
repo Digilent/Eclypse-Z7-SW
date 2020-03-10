@@ -43,7 +43,7 @@ void writeADCData(std::string filename, uint32_t *acqBuffer, uint8_t channel, ui
 	std::ofstream file(filename);
 	int16_t valCh;
 	float val;
-	file << "Channel\n, Time";
+	file << "Channel, Time\n";
 
 	for (size_t i = 0; i < length; i++) {
 		if (i < 100)
@@ -90,11 +90,12 @@ void adcDemo(uint8_t channel, uint8_t gain, size_t length) {
  * ADC Linux Demo
  */
 int main() {
-	std::cout << "ZmodADC1410 Demo";
+	std::cout << "ZmodADC1410 Demo\n";
+	std::cout << "ZmodADC1410 Demo\n";
 
 	// channel 					A
 	// gain						HIGH
 	// length					0x400
-	adcDemo(0, 1, TRANSFER_LEN);
+	//adcDemo(0, 1, TRANSFER_LEN);
 	return 0;
 }

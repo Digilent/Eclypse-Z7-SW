@@ -79,13 +79,13 @@ void dacRampDemo(float offset, float amplitude, float step, uint8_t channel, uin
 }
 
 int main() {
-	std::cout << "ZmodDAC1411 Demo";
+	std::cout << "ZmodDAC1411 Demo\n";
 	// offset 					2 V
 	// amplitude 				3 V
 	// step 					10 mV
 	// channel 					A
 	// Output Frequency Divider	2
 	// gain						HIGH
-	dacRampDemo(2, 3, 0.01, 0, 2, 1);
+	//dacRampDemo(2, 3, 0.01, 0, 2, 1);
 	return 0;
 }
