@@ -86,6 +86,6 @@ int main() {
 	// channel 					A
 	// Output Frequency Divider	2
 	// gain						HIGH
-	//dacRampDemo(2, 3, 0.01, 0, 2, 1);
+	dacRampDemo(2, 3, 0.01, 0, 2, 1);
 	return 0;
 }

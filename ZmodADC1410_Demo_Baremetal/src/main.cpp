@@ -112,7 +112,7 @@ int main() {
 	// channel 					A
 	// gain						HIGH
 	// length					0x400
-	adcDemo(0, 1, TRANSFER_LEN);
+	adcDemo(0, 0, TRANSFER_LEN);
 
 	//	testZMODADC1410Ramp_Auto();
 	return 0;
