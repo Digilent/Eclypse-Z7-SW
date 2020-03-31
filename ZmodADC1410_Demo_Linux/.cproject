@@ -91,11 +91,27 @@
 							<tool id="xilinx.gnu.armv7.linux.cxx.toolchain.compiler.release.301540828" name="ARM v7 Linux g++ compiler" superClass="xilinx.gnu.armv7.linux.cxx.toolchain.compiler.release">
 								<option defaultValue="gnu.c.optimization.level.more" id="xilinx.gnu.compiler.option.optimization.level.1311949227" name="Optimization Level" superClass="xilinx.gnu.compiler.option.optimization.level" valueType="enumerated"/>
 								<option id="xilinx.gnu.compiler.option.debugging.level.2071471823" name="Debug Level" superClass="xilinx.gnu.compiler.option.debugging.level" value="gnu.c.debugging.level.none" valueType="enumerated"/>
+								<option id="xilinx.gnu.compiler.symbols.defined.39923346" name="Defined symbols (-D)" superClass="xilinx.gnu.compiler.symbols.defined" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="LINUX_APP"/>
+								</option>
+								<option id="xilinx.gnu.compiler.dircategory.includes.1182772213" name="Include Paths" superClass="xilinx.gnu.compiler.dircategory.includes" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${SYSROOT}/usr/include&quot;"/>
+									<listOptionValue builtIn="false" value="{CWD}/../../zmodlib/Zmod"/>
+									<listOptionValue builtIn="false" value="&quot;${CWD}/../../zmodlib/ZmodADC1410&quot;"/>
+								</option>
 								<inputType id="xilinx.gnu.armv7.linux.cxx.compiler.input.2106808829" name="C++ source files" superClass="xilinx.gnu.armv7.linux.cxx.compiler.input"/>
 							</tool>
 							<tool id="xilinx.gnu.armv7.linux.toolchain.archiver.1611057632" name="ARM v7 Linux archiver" superClass="xilinx.gnu.armv7.linux.toolchain.archiver"/>
 							<tool id="xilinx.gnu.armv7.linux.c.toolchain.linker.release.12471029" name="ARM v7 Linux gcc linker" superClass="xilinx.gnu.armv7.linux.c.toolchain.linker.release"/>
 							<tool id="xilinx.gnu.armv7.linux.cxx.toolchain.linker.release.1745182126" name="ARM v7 Linux g++ linker" superClass="xilinx.gnu.armv7.linux.cxx.toolchain.linker.release">
+								<option id="xilinx.gnu.c.link.option.libs.99237466" name="Libraries (-l)" superClass="xilinx.gnu.c.link.option.libs" valueType="libs">
+									<listOptionValue builtIn="false" value="uio"/>
+								</option>
+								<option id="xilinx.gnu.c.link.option.paths.818170237" name="Library search path (-L)" superClass="xilinx.gnu.c.link.option.paths" valueType="libPaths">
+									<listOptionValue builtIn="false" value="&quot;${SYSROOT}/usr/lib&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SYSROOT}/lib&quot;"/>
+								</option>
+								<option id="xilinx.gnu.c.link.option.ldflags.745833902" name="Linker Flags" superClass="xilinx.gnu.c.link.option.ldflags" value="--sysroot=${SYSROOT}" valueType="string"/>
 								<inputType id="xilinx.gnu.linker.input.322460255" superClass="xilinx.gnu.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
@@ -129,6 +145,13 @@
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="com.xilinx.managedbuilder.ui.ARMA53X32LinuxGCCManagedMakePerProjectProfileC"/>
 		</scannerConfigBuildInfo>
 	</storageModule>
-	<storageModule moduleId="refreshScope"/>
+	<storageModule moduleId="refreshScope" versionNumber="2">
+		<configuration configurationName="Debug">
+			<resource resourceType="PROJECT" workspacePath="/ZmodADC1410_Demo_Linux"/>
+		</configuration>
+		<configuration configurationName="Release">
+			<resource resourceType="PROJECT" workspacePath="/ZmodADC1410_Demo_Linux"/>
+		</configuration>
+	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
 </cproject>
