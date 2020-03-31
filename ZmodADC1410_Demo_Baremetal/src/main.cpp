@@ -109,8 +109,8 @@ void adcDemo(uint8_t channel, uint8_t gain, size_t length) {
  * ADC Baremetal Demo
  */
 int main() {
-	// channel 					1
-	// gain						LOW
+	// channel 					CH1
+	// gain						LOW - Corresponds to HIGH input Range
 	// length					0x400
 	adcDemo(0, 0, TRANSFER_LEN);
 
