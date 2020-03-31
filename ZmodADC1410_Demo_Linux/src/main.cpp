@@ -91,9 +91,9 @@ void adcDemo(uint8_t channel, uint8_t gain, size_t length) {
  */
 int main() {
 	std::cout << "ZmodADC1410 Demo\n";
-	// channel 					A
-	// gain						HIGH
+	// channel 					CH1
+	// gain						LOW - Corresponds to HIGH input Range
 	// length					0x400
-	adcDemo(0, 1, TRANSFER_LEN);
+	adcDemo(0, 0, TRANSFER_LEN);
 	return 0;
 }

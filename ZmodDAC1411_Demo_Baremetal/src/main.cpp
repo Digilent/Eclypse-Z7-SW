@@ -83,9 +83,9 @@ int main() {
 	// offset 					2 V
 	// amplitude 				3 V
 	// step 					10 mV
-	// channel 					A
+	// channel 					CH1
 	// Output Frequency Divider	2
-	// gain						HIGH
-	dacRampDemo(2, 3, 0.01, 0, 2, 1);
+	// gain						LOW - Corresponds to LOW input Range
+	dacRampDemo(2, 3, 0.01, 0, 2, 0);
     return 0;
 }
