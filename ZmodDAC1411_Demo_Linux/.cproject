@@ -33,7 +33,6 @@
 									<listOptionValue builtIn="false" value="LINUX_APP"/>
 								</option>
 								<option id="xilinx.gnu.compiler.dircategory.includes.1270038708" name="Include Paths" superClass="xilinx.gnu.compiler.dircategory.includes" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${SYSROOT}/usr/include/arm-linux-gnueabihf&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${SYSROOT}/usr/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${CWD}/../../zmodlib/Zmod&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${CWD}/../../zmodlib/ZmodDAC1411&quot;"/>

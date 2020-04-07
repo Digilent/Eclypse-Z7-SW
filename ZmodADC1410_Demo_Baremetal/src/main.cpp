@@ -114,6 +114,6 @@ int main() {
 	// length					0x400
 	adcDemo(0, 0, TRANSFER_LEN);
 
-	//	testZMODADC1410Ramp_Auto();
+	//testZMODADC1410Ramp_Auto();
 	return 0;
 }
