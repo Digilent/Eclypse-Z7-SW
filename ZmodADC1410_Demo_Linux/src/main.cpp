@@ -43,7 +43,7 @@ void writeADCData(std::string filename, uint32_t *acqBuffer, uint8_t channel, ui
 	std::ofstream file(filename);
 	int16_t valCh;
 	float val;
-	file << "Time, Channel\n";
+	file << "Channel, Time\n";
 
 	for (size_t i = 0; i < length; i++) {
 		if (i < 100)
@@ -59,8 +59,8 @@ void writeADCData(std::string filename, uint32_t *acqBuffer, uint8_t channel, ui
 		val = adcZmod.getVoltFromSignedRaw(valCh, gain);
 		adcZmod.formatValue(val_formatted, 1000.0*val, "mV");
 
-		file << time_formatted << ", " << val_formatted << "\n";
-		std::cout << time_formatted << ", " << val_formatted << "\n";
+		file << val_formatted << ", " << time_formatted << "\n";
+		std::cout << val_formatted << ", " << time_formatted << "\n";
 	}
 	file.close();
 }
