@@ -85,7 +85,7 @@ int main() {
 	// step 					10 mV
 	// channel 					CH1
 	// Output Frequency Divider	2
-	// gain						LOW - corresponds to LOW input Range
-	dacRampDemo(2, 3, 0.01, 0, 2, 0);
+	// gain						HIGH - corresponds to HIGH input Range
+	dacRampDemo(2, 3, 0.01, 0, 2, 1);
 	return 0;
 }
