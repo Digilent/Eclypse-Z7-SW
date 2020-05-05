@@ -41,37 +41,47 @@ void dacRampDemo(float offset, float amplitude, float step, uint8_t channel, uin
 	float val;
 	uint32_t valBuf;
 	int16_t valRaw;
-	size_t length = (int)(amplitude/step) << 2;
-	int i;
-	if (length > ((1<<14) - 1))
+	size_t length;
+	if (amplitude == 0)
+		{
+			length = 1;
+			buf = dacZmod.allocChannelsBuffer(length);
+			dacZmod.setOutputSampleFrequencyDivider(frequencyDivider);
+			dacZmod.setGain(channel, gain);
+			valRaw = dacZmod.getSignedRawFromVolt(offset, gain);
+			valBuf = dacZmod.arrangeChannelData(channel, valRaw);
+			buf[0] = valBuf;
+		}
+	else if (amplitude != 0)
 	{
-		// limit the length to maximum buffer size (1<<14 - 1)
-		length = ((1<<14) - 1);
-		// adjust step
-		step = amplitude/(length>>2);
+	    length = (int)(amplitude/step) << 2;
+		int i;
+		if (length > ((1<<14) - 1))
+		{
+			// limit the length to maximum buffer size (1<<14 - 1)
+			length = ((1<<14) - 1);
+			// adjust step
+			step = amplitude/(length>>2);
+		}
+		buf = dacZmod.allocChannelsBuffer(length);
+		dacZmod.setOutputSampleFrequencyDivider(frequencyDivider);
+		dacZmod.setGain(channel, gain);
+		i = 0;
+		// ramp up
+		for(val = -amplitude; val < amplitude; val += step)
+		{
+			valRaw = dacZmod.getSignedRawFromVolt(val + offset, gain);
+			valBuf = dacZmod.arrangeChannelData(channel, valRaw);
+			buf[i++] = valBuf;
+		}
+		// ramp down
+		for(val = amplitude; val > -amplitude; val -= step)
+		{
+			valRaw = dacZmod.getSignedRawFromVolt(val + offset, gain);
+			valBuf = dacZmod.arrangeChannelData(channel, valRaw);
+			buf[i++] = valBuf;
+		}
 	}
-
-	buf = dacZmod.allocChannelsBuffer(length);
-
-	dacZmod.setOutputSampleFrequencyDivider(frequencyDivider);
-	dacZmod.setGain(channel, gain);
-
-	i = 0;
-	// ramp up
-	for(val = -amplitude; val < amplitude; val += step)
-	{
-		valRaw = dacZmod.getSignedRawFromVolt(val + offset, gain);
-		valBuf = dacZmod.arrangeChannelData(channel, valRaw);
-		buf[i++] = valBuf;
-	}
-	// ramp down
-	for(val = amplitude; val > -amplitude; val -= step)
-	{
-		valRaw = dacZmod.getSignedRawFromVolt(val + offset, gain);
-		valBuf = dacZmod.arrangeChannelData(channel, valRaw);
-		buf[i++] = valBuf;
-	}
-
 	// send data to DAC and start the instrument
 	dacZmod.setData(buf, length);
 	dacZmod.start();
@@ -86,6 +96,6 @@ int main() {
 	// channel 					CH1
 	// Output Frequency Divider	2
 	// gain						HIGH - Corresponds to HIGH input Range
-	dacRampDemo(2, 3, 0.01, 0, 2, 1);
+	dacRampDemo(3, 2, 0.01, 0, 2, 1);
 	return 0;
 }
