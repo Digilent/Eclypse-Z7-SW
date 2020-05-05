@@ -20,10 +20,10 @@
 #define IIC_BASE_ADDR   0xE0005000
 #define ZMOD_IRQ 		61
 
-#define DAC_BASE_ADDR 		0x43C00000
-#define DAC_DMA_BASE_ADDR 	0x40400000
+#define DAC_BASE_ADDR 		0x43C10000
+#define DAC_DMA_BASE_ADDR 	0x40410000
 #define DAC_FLASH_ADDR   	0x31
-#define DAC_DMA_IRQ 		61
+#define DAC_DMA_IRQ 		63
 
 /*
  * Simple DAC test, using simple ramp values populated in the buffer.
@@ -41,37 +41,51 @@ void dacRampDemo(float offset, float amplitude, float step, uint8_t channel, uin
 	float val;
 	uint32_t valBuf;
 	int16_t valRaw;
-	size_t length = (size_t)(amplitude/step) << 2;
-	int i;
-	if (length > ((1<<14) - 1))
+	size_t length;
+	if (amplitude == 0)
 	{
-		// limit the length to maximum buffer size (1<<14 - 1)
-		length = ((1<<14) - 1);
-		// adjust step
-		step = amplitude/(length>>2);
-	}
-
-	buf = dacZmod.allocChannelsBuffer(length);
-
-	dacZmod.setOutputSampleFrequencyDivider(frequencyDivider);
-	dacZmod.setGain(channel, gain);
-
-	i = 0;
-	// ramp up
-	for(val = -amplitude; val < amplitude; val += step)
-	{
-		valRaw = dacZmod.getSignedRawFromVolt(val + offset, gain);
+		length = 1;
+		buf = dacZmod.allocChannelsBuffer(length);
+		dacZmod.setOutputSampleFrequencyDivider(frequencyDivider);
+		dacZmod.setGain(channel, gain);
+		valRaw = dacZmod.getSignedRawFromVolt(offset, gain);
 		valBuf = dacZmod.arrangeChannelData(channel, valRaw);
-		buf[i++] = valBuf;
+		buf[0] = valBuf;
 	}
-	// ramp down
-	for(val = amplitude; val > -amplitude; val -= step)
+	else if (amplitude != 0)
 	{
-		valRaw = dacZmod.getSignedRawFromVolt(val + offset, gain);
-		valBuf = dacZmod.arrangeChannelData(channel, valRaw);
-		buf[i++] = valBuf;
-	}
 
+		length = (size_t)(amplitude/step) << 2;
+		int i;
+		if (length > ((1<<14) - 1))
+		{
+			// limit the length to maximum buffer size (1<<14 - 1)
+			length = ((1<<14) - 1);
+			// adjust step
+			step = amplitude/(length>>2);
+		}
+
+		buf = dacZmod.allocChannelsBuffer(length);
+
+		dacZmod.setOutputSampleFrequencyDivider(frequencyDivider);
+		dacZmod.setGain(channel, gain);
+
+		i = 0;
+		// ramp up
+		for(val = -amplitude; val < amplitude; val += step)
+		{
+			valRaw = dacZmod.getSignedRawFromVolt(val + offset, gain);
+			valBuf = dacZmod.arrangeChannelData(channel, valRaw);
+			buf[i++] = valBuf;
+		}
+		// ramp down
+		for(val = amplitude; val > -amplitude; val -= step)
+		{
+			valRaw = dacZmod.getSignedRawFromVolt(val + offset, gain);
+			valBuf = dacZmod.arrangeChannelData(channel, valRaw);
+			buf[i++] = valBuf;
+		}
+	}
 	// send data to DAC and start the instrument
 	dacZmod.setData(buf, length);
 	dacZmod.start();
