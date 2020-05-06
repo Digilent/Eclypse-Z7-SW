@@ -99,6 +99,6 @@ int main() {
 	// channel 					CH1
 	// Output Frequency Divider	2
 	// gain						HIGH - corresponds to HIGH input Range
-	dacRampDemo(2, 3, 0.01, 1, 2, 1);
+	dacRampDemo(2, 3, 0.01, 0, 2, 1);
     return 0;
 }
