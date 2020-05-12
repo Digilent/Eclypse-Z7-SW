@@ -17,7 +17,7 @@ To gain access to this demo's sources, it is recommended to clone the [Eclypse-Z
 
 > `git clone --recursive https://github.com/Digilent/Eclypse-Z7 -b oob/master`
 
-For instructions on setting up the demo see the *Quick Guide* section of [digilent-vivado-scripts' README](https://github.com/Digilent/digilent-vivado-scripts/blob/5dee436ae7810e2fa098d298308567c73736a639/README.md.
+For instructions on setting up the demo see the *Quick Guide* section of [digilent-vivado-scripts README](https://github.com/Digilent/digilent-vivado-scripts/blob/5dee436ae7810e2fa098d298308567c73736a639/README.md).
 
 ## Next Steps
 
@@ -29,4 +29,4 @@ For more information on the Eclypse Z7, visit its [Resource Center](https://refe
 
 For more information on how our git and project flow is set up, please refer to the [Eclypse Z7 Git Repositories](https://reference.digilentinc.com/reference/programmable-logic/eclypse-z7/git) documentation.
 
-For technical support or questions, please post on the [Digilent Forum](forum.digilentinc.com).
+For technical support or questions, please post on the [Digilent Forum](https://forum.digilentinc.com).
