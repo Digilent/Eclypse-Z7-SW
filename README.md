@@ -23,4 +23,4 @@ For more information on the Eclypse Z7, visit its [Resource Center](https://refe
 
 For more information on how our git and project flow is set up, please refer to the [Eclypse Z7 Git Repositories](https://reference.digilentinc.com/reference/programmable-logic/eclypse-z7/git) documentation.
 
-For technical support or questions, please post on the [Digilent Forum](forum.digilentinc.com).
+For technical support or questions, please post on the [Digilent Forum](https://forum.digilentinc.com).
