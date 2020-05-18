@@ -2,7 +2,7 @@
 
 ## Description
 
-This is a branch of the Eclypse Z7 board containing the SDK workspace with a simple "Hello World" project in bare-metal. The hardware is based on the master branch of [Eclypse-Z7-HW](https://github.com/Digilent/Eclypse-Z7-HW).
+This is a branch of the Eclypse Z7 board containing the SDK workspace with the dpmutil application project in bare-metal. The hardware is based on the master branch of [Eclypse-Z7-HW](https://github.com/Digilent/Eclypse-Z7-HW).
 
 ## Requirements
 
