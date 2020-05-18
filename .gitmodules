@@ -1,0 +1,6 @@
+[submodule "dpmutil/src/dpmutil"]
+	path = dpmutil/src/dpmutil
+	url = https://github.com/Digilent/dpmutil
+[submodule "dpmutil-linux-app/src/dpmutil"]
+	path = dpmutil-linux-app/src/dpmutil
+	url = https://github.com/Digilent/dpmutil

@@ -1,0 +1,1 @@
+This file contains the demo application for dpmutil. This is used to interface with the onboard power management unit (PMU) and syzygy ports.
