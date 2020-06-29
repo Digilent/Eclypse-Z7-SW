@@ -492,15 +492,23 @@ FParseArguments(int cszArg, char* rgszArg[]) {
 
 			switch ( rgszArg[iszArg][0] ) {
 				case '1':
+				case 'a':
+				case 'A':
 					fanidGetSet = 0;
 					break;
 				case '2':
+				case 'b':
+				case 'B':
 					fanidGetSet = 1;
 					break;
 				case '3':
+				case 'c':
+				case 'C':
 					fanidGetSet = 2;
 					break;
 				case '4':
+				case 'd':
+				case 'D':
 					fanidGetSet = 3;
 					break;
 				default:
