@@ -519,15 +519,23 @@ int parseArguments(){
 
 			switch ( arg[0] ) {
 				case '1':
+				case 'a':
+				case 'A':
 					flags.fanid = 0;
 					break;
 				case '2':
+				case 'b':
+				case 'B':
 					flags.fanid = 1;
 					break;
 				case '3':
+				case 'c':
+				case 'C':
 					flags.fanid = 2;
 					break;
 				case '4':
+				case 'd':
+				case 'D':
 					flags.fanid = 3;
 					break;
 				default:
