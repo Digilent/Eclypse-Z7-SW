@@ -302,7 +302,7 @@ BOOL getLine(){
 			return fTrue;
 		}
 		//Acceptable characters
-		else if((tolower(chUartMsg[iCmdChar])>'a' && tolower(chUartMsg[iCmdChar])<'z') ||
+		else if((tolower(chUartMsg[iCmdChar])>='a' && tolower(chUartMsg[iCmdChar])<='z') ||
 				(chUartMsg[iCmdChar]>'0' && chUartMsg[iCmdChar]<'9') ||
 				chUartMsg[iCmdChar]=='-' || chUartMsg[iCmdChar] == '?'|| chUartMsg[iCmdChar] == ' '){
 			xil_printf("%c", chUartMsg[iCmdChar]);
