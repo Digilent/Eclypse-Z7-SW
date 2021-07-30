@@ -1,15 +1,15 @@
-# Eclypse Z7 Out-of-Box Demo SDK Workspace
+# Eclypse Z7 Out-of-Box Demo 
 
 ## Description
 
-This is a branch of the Eclypse Z7 Software Repository containing the SDK workspace for the Baremetal Software Out-of-Box Demo. This demo is programmed into the board's flash during manufacturing.
+This is a branch of the Eclypse Z7 Software Repository containing the Vitis sources for the Baremetal Software Out-of-Box Demo. This demo is programmed into the board's flash during manufacturing.
 
 The hardware is based on the `oob/master` branch of [Eclypse-Z7-HW](https://github.com/Digilent/Eclypse-Z7-HW).
 
 ## Requirements
 
 * **Eclypse Z7**
-* **Vivado 2019.1 Installation with Xilinx SDK**: To set up Vivado, see the [Installing Vivado and Digilent Board Files Tutorial](https://reference.digilentinc.com/vivado/installing-vivado/start).
+* **Vivado 2021.1 Installation with Xilinx Vitis 2021.1**: To set up Vivado and Vitis, see the [Installing Vivado, Vitis, and Digilent Board Files](https://reference.digilentinc.com/vivado/installing-vivado/start), [Create a New Application Project](https://reference.digilentinc.com/programmable-logic/guides/vitis-create-app).
 
 ## Setup
 
@@ -17,7 +17,7 @@ To gain access to this demo's sources, it is recommended to clone the [Eclypse-Z
 
 > `git clone --recursive https://github.com/Digilent/Eclypse-Z7 -b oob/master`
 
-For instructions on setting up the demo see the *Quick Guide* section of [digilent-vivado-scripts' README](https://github.com/Digilent/digilent-vivado-scripts/blob/5dee436ae7810e2fa098d298308567c73736a639/README.md.
+For instructions on setting up the demo see the *Quick Guide* section of [digilent-vivado-scripts' README](https://github.com/Digilent/digilent-vivado-scripts/blob/5dee436ae7810e2fa098d298308567c73736a639/README.md).
 
 ## Next Steps
 
