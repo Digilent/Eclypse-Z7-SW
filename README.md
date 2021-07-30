@@ -1,15 +1,15 @@
-# Eclypse Z7 Out-of-Box Demo 
+# Eclypse Z7 Out-of-Box Demo SDK Workspace
 
 ## Description
 
-This is a branch of the Eclypse Z7 Software Repository containing the Vitis sources for the Baremetal Software Out-of-Box Demo. This demo is programmed into the board's flash during manufacturing.
+This is a branch of the Eclypse Z7 Software Repository containing the SDK workspace for the Baremetal Software Out-of-Box Demo. This demo is programmed into the board's flash during manufacturing.
 
 The hardware is based on the `oob/master` branch of [Eclypse-Z7-HW](https://github.com/Digilent/Eclypse-Z7-HW).
 
 ## Requirements
 
 * **Eclypse Z7**
-* **Vivado 2021.1 Installation with Xilinx Vitis 2021.1**: To set up Vivado and Vitis, see the [Installing Vivado, Vitis, and Digilent Board Files](https://reference.digilentinc.com/vivado/installing-vivado/start), [Create a New Application Project] (https://reference.digilentinc.com/programmable-logic/guides/vitis-create-app).
+* **Vivado 2019.1 Installation with Xilinx SDK**: To set up Vivado, see the [Installing Vivado and Digilent Board Files Tutorial](https://reference.digilentinc.com/vivado/installing-vivado/start).
 
 ## Setup
 
