@@ -54,8 +54,7 @@ void dacRampDemo(float offset, float amplitude, float step, uint8_t channel, uin
 	}
 	else if (amplitude != 0)
 	{
-
-		length = (size_t)(amplitude/step) << 2;
+		length = ((size_t)((amplitude * 2.0) / step)) * 2;
 		int i;
 		if (length > ((1<<14) - 1))
 		{
