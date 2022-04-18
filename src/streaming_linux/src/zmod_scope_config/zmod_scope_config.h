@@ -34,12 +34,14 @@ typedef enum {
 } COUPLING;
 
 // Control
+int8_t fnZmodScopeConfigEnableReset(UIO* uio);
+int8_t fnZmodScopeConfigDisableReset(UIO* uio);
 int8_t fnZmodScopeConfigEnable(UIO* uio);
 int8_t fnZmodScopeConfigDisable(UIO* uio);
 int8_t fnZmodScopeConfigEnableAcquisition(UIO* uio);
 int8_t fnZmodScopeConfigDisableAcquisition(UIO* uio);
-int8_t fnZmodScopeConfigSetTestMode(UIO* uio, uint8_t testMode);
-int8_t fnZmodScopeConfigGetTestMode(UIO* uio);
+int8_t fnZmodScopeConfigEnableTestMode(UIO* uio);
+int8_t fnZmodScopeConfigDisableTestMode(UIO* uio);
 
 // Channel 1
 int8_t fnZmodScopeConfigCh1SetExtCoefficients(UIO* uio, uint32_t HgMultCoef, uint32_t LgMultCoef,
@@ -62,10 +64,10 @@ int8_t fnZmodScopeConfigCh2SetCoupling(UIO* uio, COUPLING coupling);
 int8_t fnZmodScopeConfigCh2GetCoupling(UIO* uio);
 
 // Status flags
-int8_t fnZmodScopeGetRstBusy(UIO* uio);
-int8_t fnZmodScopeGetConfigError(UIO* uio);
-int8_t fnZmodScopeGetInitDoneADC(UIO* uio);
-int8_t fnZmodScopeGetInitDoneRelay(UIO* uio);
-int8_t fnZmodScopeGetDataOverflow(UIO* uio);
+int8_t fnZmodScopeConfigIsRstBusy(UIO* uio);
+int8_t fnZmodScopeConfigIsConfigError(UIO* uio);
+int8_t fnZmodScopeConfigIsInitDoneADC(UIO* uio);
+int8_t fnZmodScopeConfigIsInitDoneRelay(UIO* uio);
+int8_t fnZmodScopeConfigIsDataOverflow(UIO* uio);
 
 #endif

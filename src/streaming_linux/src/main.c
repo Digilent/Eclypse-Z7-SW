@@ -74,6 +74,9 @@ int main(int argc, char *argv[])
 	uioZmodScopeConfig = UIO_MAP(1, 0);
 	// start Zmod Scope Config HLS IP
 	fnZmodScopeConfigEnable(uioZmodScopeConfig);
+	fnZmodScopeConfigDisableReset(uioZmodScopeConfig);
+	fnZmodScopeConfigEnableAcquisition(uioZmodScopeConfig);
+	while(fnZmodScopeConfigIsRstBusy(uioZmodScopeConfig));
 	// configure Zmod Scope with default coefficients
 	fnZmodScopeConfigCh1SetExtCoefficients(uioZmodScopeConfig, 0x11631, 0x10A14, 0x3FE10, 0x3FE2D);
 	fnZmodScopeConfigCh2SetExtCoefficients(uioZmodScopeConfig, 0x1178C, 0x10B14, 0x001F4, 0x00010);

@@ -110,7 +110,7 @@ int8_t fnZmodScopeConfigCh1SetGain(UIO* uio, GAIN gain) {
 		perror("UIO is NULL");
 		return -1;
 	}
-	ACCESS_REG(uio->mapPtr, ZMOD_SCOPE_REG_ADDR_CONFIG) = (ACCESS_REG(uio->mapPtr, ZMOD_SCOPE_REG_ADDR_CONFIG) & 0b111110) + gain;
+	ACCESS_REG(uio->mapPtr, ZMOD_SCOPE_REG_ADDR_CONFIG) = (ACCESS_REG(uio->mapPtr, ZMOD_SCOPE_REG_ADDR_CONFIG) & 0b1111110) + gain;
 	return 0;
 }
 
@@ -128,7 +128,7 @@ int8_t fnZmodScopeConfigCh1GetGain(UIO* uio) {
 		perror("UIO is NULL");
 		return -1;
 	}
-	return (ACCESS_REG(uio->mapPtr, ZMOD_SCOPE_REG_ADDR_CONFIG) & 0b000001);
+	return (ACCESS_REG(uio->mapPtr, ZMOD_SCOPE_REG_ADDR_CONFIG) & 0b0000001);
 }
 
 /***************************************************************************
@@ -146,7 +146,7 @@ int8_t fnZmodScopeConfigCh1SetCoupling(UIO* uio, COUPLING coupling) {
 		perror("UIO is NULL");
 		return -1;
 	}
-	ACCESS_REG(uio->mapPtr, ZMOD_SCOPE_REG_ADDR_CONFIG) = (ACCESS_REG(uio->mapPtr, ZMOD_SCOPE_REG_ADDR_CONFIG) & 0b111011) + (coupling << 2);
+	ACCESS_REG(uio->mapPtr, ZMOD_SCOPE_REG_ADDR_CONFIG) = (ACCESS_REG(uio->mapPtr, ZMOD_SCOPE_REG_ADDR_CONFIG) & 0b1111011) + (coupling << 2);
 	return 0;
 }
 
@@ -164,7 +164,7 @@ int8_t fnZmodScopeConfigCh1GetCoupling(UIO* uio) {
 		perror("UIO is NULL");
 		return -1;
 	}
-	return (ACCESS_REG(uio->mapPtr, ZMOD_SCOPE_REG_ADDR_CONFIG) & 0b000100) >> 2;
+	return (ACCESS_REG(uio->mapPtr, ZMOD_SCOPE_REG_ADDR_CONFIG) & 0b0000100) >> 2;
 }
 
 /***************************************************************************
@@ -239,7 +239,7 @@ int8_t fnZmodScopeConfigCh2SetGain(UIO* uio, GAIN gain) {
 		perror("UIO is NULL");
 		return -1;
 	}
-	ACCESS_REG(uio->mapPtr, ZMOD_SCOPE_REG_ADDR_CONFIG) = (ACCESS_REG(uio->mapPtr, ZMOD_SCOPE_REG_ADDR_CONFIG) & 0b111101) + (gain << 1);
+	ACCESS_REG(uio->mapPtr, ZMOD_SCOPE_REG_ADDR_CONFIG) = (ACCESS_REG(uio->mapPtr, ZMOD_SCOPE_REG_ADDR_CONFIG) & 0b1111101) + (gain << 1);
 	return 0;
 }
 
@@ -257,7 +257,7 @@ int8_t fnZmodScopeConfigCh2GetGain(UIO* uio) {
 		perror("UIO is NULL");
 		return -1;
 	}
-	return (ACCESS_REG(uio->mapPtr, ZMOD_SCOPE_REG_ADDR_CONFIG) & 0b000010) >> 1;
+	return (ACCESS_REG(uio->mapPtr, ZMOD_SCOPE_REG_ADDR_CONFIG) & 0b0000010) >> 1;
 }
 
 /***************************************************************************
@@ -275,7 +275,7 @@ int8_t fnZmodScopeConfigCh2SetCoupling(UIO* uio, COUPLING coupling) {
 		perror("UIO is NULL");
 		return -1;
 	}
-	ACCESS_REG(uio->mapPtr, ZMOD_SCOPE_REG_ADDR_CONFIG) = (ACCESS_REG(uio->mapPtr, ZMOD_SCOPE_REG_ADDR_CONFIG) & 0b110111) + (coupling << 3);
+	ACCESS_REG(uio->mapPtr, ZMOD_SCOPE_REG_ADDR_CONFIG) = (ACCESS_REG(uio->mapPtr, ZMOD_SCOPE_REG_ADDR_CONFIG) & 0b1110111) + (coupling << 3);
 	return 0;
 }
 
@@ -293,7 +293,7 @@ int8_t fnZmodScopeConfigCh2GetCoupling(UIO* uio) {
 		perror("UIO is NULL");
 		return -1;
 	}
-	return (ACCESS_REG(uio->mapPtr, ZMOD_SCOPE_REG_ADDR_CONFIG) & 0b001000) >> 3;
+	return (ACCESS_REG(uio->mapPtr, ZMOD_SCOPE_REG_ADDR_CONFIG) & 0b0001000) >> 3;
 }
 /***************************************************************************
 * This function enables the test mode on the Zmod Scope.
@@ -310,7 +310,7 @@ int8_t fnZmodScopeConfigEnableTestMode(UIO* uio) {
 		return -1;
 	}
 
-	ACCESS_REG(uio->mapPtr, ZMOD_SCOPE_REG_ADDR_CONFIG) = (ACCESS_REG(uio->mapPtr, ZMOD_SCOPE_REG_ADDR_CONFIG) & 0b101111) + (1 << 4);
+	ACCESS_REG(uio->mapPtr, ZMOD_SCOPE_REG_ADDR_CONFIG) = (ACCESS_REG(uio->mapPtr, ZMOD_SCOPE_REG_ADDR_CONFIG) & 0b1101111) + (1 << 4);
 	return 0;
 }
 
@@ -323,12 +323,12 @@ int8_t fnZmodScopeConfigEnableTestMode(UIO* uio) {
 * 			-1 if the provided UIO is NULL
 *
 ******************************************************************************/
-int8_t fnZmodScopeConfigGetTestMode(UIO* uio) {
+int8_t fnZmodScopeConfigDisableTestMode(UIO* uio) {
 	if(uio == NULL) {
 		perror("UIO is NULL");
 		return -1;
 	}
-	ACCESS_REG(uio->mapPtr, ZMOD_SCOPE_REG_ADDR_CONFIG) = (ACCESS_REG(uio->mapPtr, ZMOD_SCOPE_REG_ADDR_CONFIG) & 0b101111) + (0 << 4);
+	ACCESS_REG(uio->mapPtr, ZMOD_SCOPE_REG_ADDR_CONFIG) = (ACCESS_REG(uio->mapPtr, ZMOD_SCOPE_REG_ADDR_CONFIG) & 0b1101111) + (0 << 4);
 	return 0;
 }
 
@@ -347,7 +347,7 @@ int8_t fnZmodScopeConfigEnableAcquisition(UIO* uio) {
 		return -1;
 	}
 
-	ACCESS_REG(uio->mapPtr, ZMOD_SCOPE_REG_ADDR_CONFIG) = (ACCESS_REG(uio->mapPtr, ZMOD_SCOPE_REG_ADDR_CONFIG) & 0b011111) + (1 << 5);
+	ACCESS_REG(uio->mapPtr, ZMOD_SCOPE_REG_ADDR_CONFIG) = (ACCESS_REG(uio->mapPtr, ZMOD_SCOPE_REG_ADDR_CONFIG) & 0b1011111) + (1 << 5);
 	return 0;
 }
 
@@ -365,7 +365,44 @@ int8_t fnZmodScopeConfigDisableAcquisition(UIO* uio) {
 		perror("UIO is NULL");
 		return -1;
 	}
-	ACCESS_REG(uio->mapPtr, ZMOD_SCOPE_REG_ADDR_CONFIG) = (ACCESS_REG(uio->mapPtr, ZMOD_SCOPE_REG_ADDR_CONFIG) & 0b011111) + (0 << 5);
+	ACCESS_REG(uio->mapPtr, ZMOD_SCOPE_REG_ADDR_CONFIG) = (ACCESS_REG(uio->mapPtr, ZMOD_SCOPE_REG_ADDR_CONFIG) & 0b1011111) + (0 << 5);
+	return 0;
+}
+
+/***************************************************************************
+* This function enables reset on the Zmod Scope.
+*
+* @param	uio	 		   	 	- UIO struct to which the registers are mapped
+*
+* @return	 0 on success,
+* 			-1 if the provided UIO is NULL
+*
+******************************************************************************/
+int8_t fnZmodScopeConfigEnableReset(UIO* uio) {
+	if(uio == NULL) {
+		perror("UIO is NULL");
+		return -1;
+	}
+
+	ACCESS_REG(uio->mapPtr, ZMOD_SCOPE_REG_ADDR_CONFIG) = (ACCESS_REG(uio->mapPtr, ZMOD_SCOPE_REG_ADDR_CONFIG) & 0b0111111) + (0 << 6);
+	return 0;
+}
+
+/***************************************************************************
+* This function disables reset on the Zmod Scope.
+*
+* @param	uio	 		   	 	- UIO struct to which the registers are mapped
+*
+* @return	 0 on success,
+* 			-1 if the provided UIO is NULL
+*
+******************************************************************************/
+int8_t fnZmodScopeConfigDisableReset(UIO* uio) {
+	if(uio == NULL) {
+		perror("UIO is NULL");
+		return -1;
+	}
+	ACCESS_REG(uio->mapPtr, ZMOD_SCOPE_REG_ADDR_CONFIG) = (ACCESS_REG(uio->mapPtr, ZMOD_SCOPE_REG_ADDR_CONFIG) & 0b0111111) + (1 << 6);
 	return 0;
 }
 
@@ -378,7 +415,7 @@ int8_t fnZmodScopeConfigDisableAcquisition(UIO* uio) {
 * 			-1 if the provided UIO is NULL
 *
 ******************************************************************************/
-int8_t fnZmodScopeConfigGetRstBusy(UIO* uio) {
+int8_t fnZmodScopeConfigIsRstBusy(UIO* uio) {
 	if(uio == NULL) {
 		perror("UIO is NULL");
 		return -1;
@@ -395,7 +432,7 @@ int8_t fnZmodScopeConfigGetRstBusy(UIO* uio) {
 * 			-1 if the provided UIO is NULL
 *
 ******************************************************************************/
-int8_t fnZmodScopeConfigGetInitDoneADC(UIO* uio) {
+int8_t fnZmodScopeConfigIsInitDoneADC(UIO* uio) {
 	if(uio == NULL) {
 		perror("UIO is NULL");
 		return -1;
@@ -412,7 +449,7 @@ int8_t fnZmodScopeConfigGetInitDoneADC(UIO* uio) {
 * 			-1 if the provided UIO is NULL
 *
 ******************************************************************************/
-int8_t fnZmodScopeConfigGetConfigError(UIO* uio) {
+int8_t fnZmodScopeConfigIsConfigError(UIO* uio) {
 	if(uio == NULL) {
 		perror("UIO is NULL");
 		return -1;
@@ -429,7 +466,7 @@ int8_t fnZmodScopeConfigGetConfigError(UIO* uio) {
 * 			-1 if the provided UIO is NULL
 *
 ******************************************************************************/
-int8_t fnZmodScopeConfigGetInitDoneRelay(UIO* uio) {
+int8_t fnZmodScopeConfigIsInitDoneRelay(UIO* uio) {
 	if(uio == NULL) {
 		perror("UIO is NULL");
 		return -1;
@@ -446,7 +483,7 @@ int8_t fnZmodScopeConfigGetInitDoneRelay(UIO* uio) {
 * 			-1 if the provided UIO is NULL
 *
 ******************************************************************************/
-int8_t fnZmodScopeConfigGetDataOverflow(UIO* uio) {
+int8_t fnZmodScopeConfigIsDataOverflow(UIO* uio) {
 	if(uio == NULL) {
 		perror("UIO is NULL");
 		return -1;
