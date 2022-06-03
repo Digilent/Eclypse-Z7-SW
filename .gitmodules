@@ -1,0 +1,3 @@
+[submodule "scripts"]
+	path = scripts
+	url = ../../digilent/digilent-vitis-scripts
