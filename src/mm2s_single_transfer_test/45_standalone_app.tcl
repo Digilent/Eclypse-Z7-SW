@@ -17,7 +17,7 @@ set app_name [file tail $script_dir]
 set lang "c"
 set domain "standalone_ps7_cortexa9_0"
 set platform "design_1_wrapper"
-set sysproj "s2mm_cyclic_transfer_test_system"
+set sysproj "mm2s_single_transfer_test_system"
 
 # Handle dependent variables
 if {$lang == "c"} {
@@ -27,6 +27,7 @@ if {$lang == "c"} {
 } else {
 	return -code error "invalid language selection in [file tail $script]; $lang should be c or c++"
 }
+
 
 # unused `app create` arguments:
 # -os, -arch, and -proc are inferred from -domain?
@@ -58,6 +59,5 @@ app config -add -name $app_name include-path $script_dir/src
 app config -set -name $app_name linker-script $script_dir/src/lscript.ld
 
 puts "Importing additional sources from hardware repo"
-source [file normalize "[file normalize [file dirname $script]]/../../../hw/repo/vivado-library/hierarchies/S2mmDmaTransfer/sw/add_sources.tcl"]
-source [file normalize "[file normalize [file dirname $script]]/../../../hw/repo/vivado-library/hierarchies/TestAxiStreamSource/sw/add_sources.tcl"]
-source [file normalize "[file normalize [file dirname $script]]/../../../hw/repo/vivado-library/hierarchies/TriggerDetector/sw/add_sources.tcl"]
+source [file normalize "[file normalize [file dirname $script]]/../../../hw/repo/vivado-library/hierarchies/Mm2sDmaTransfer/sw/add_sources.tcl"]
+source [file normalize "[file normalize [file dirname $script]]/../../../hw/repo/vivado-library/hierarchies/TestAxiStreamSink/sw/add_sources.tcl"]
