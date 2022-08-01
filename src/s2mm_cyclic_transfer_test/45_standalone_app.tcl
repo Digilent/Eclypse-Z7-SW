@@ -28,6 +28,7 @@ if {$lang == "c"} {
 	return -code error "invalid language selection in [file tail $script]; $lang should be c or c++"
 }
 
+
 # unused `app create` arguments:
 # -os, -arch, and -proc are inferred from -domain?
 # -hw conflicts with -platform usage
@@ -56,8 +57,3 @@ app config -set -name $app_name compiler-misc {-c -fmessage-length=0 -MT"$@" -mc
 app config -set -name $app_name compiler-optimization {None (-O0)}
 app config -add -name $app_name include-path $script_dir/src
 app config -set -name $app_name linker-script $script_dir/src/lscript.ld
-
-puts "Importing additional sources from hardware repo"
-source [file normalize "[file normalize [file dirname $script]]/../../../hw/repo/vivado-library/hierarchies/S2mmDmaTransfer/sw/add_sources.tcl"]
-source [file normalize "[file normalize [file dirname $script]]/../../../hw/repo/vivado-library/hierarchies/TestAxiStreamSource/sw/add_sources.tcl"]
-source [file normalize "[file normalize [file dirname $script]]/../../../hw/repo/vivado-library/hierarchies/TriggerDetector/sw/add_sources.tcl"]

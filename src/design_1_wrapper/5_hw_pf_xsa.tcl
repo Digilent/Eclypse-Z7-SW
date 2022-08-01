@@ -14,7 +14,7 @@ set hw_name [file tail $script_dir]
 
 platform create -name "$hw_name" -hw "$hw_src"
 
-platform config -extra-compiler-flags fsbl "-MMD -MP       -mcpu=cortex-a9 -mfpu=vfpv3 -mfloat-abi=hard "
+platform config -extra-compiler-flags fsbl "-MMD -MP       -mcpu=cortex-a9 -mfpu=vfpv3 -mfloat-abi=hard"
 platform config -extra-linker-flags fsbl ""
 platform config -extra-compiler-flags pmufw ""
 platform config -extra-linker-flags pmufw ""

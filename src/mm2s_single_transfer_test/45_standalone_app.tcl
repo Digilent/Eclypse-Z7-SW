@@ -57,7 +57,3 @@ app config -set -name $app_name compiler-misc {-c -fmessage-length=0 -MT"$@" -mc
 app config -set -name $app_name compiler-optimization {None (-O0)}
 app config -add -name $app_name include-path $script_dir/src
 app config -set -name $app_name linker-script $script_dir/src/lscript.ld
-
-puts "Importing additional sources from hardware repo"
-source [file normalize "[file normalize [file dirname $script]]/../../../hw/repo/vivado-library/hierarchies/Mm2sDmaTransfer/sw/add_sources.tcl"]
-source [file normalize "[file normalize [file dirname $script]]/../../../hw/repo/vivado-library/hierarchies/TestAxiStreamSink/sw/add_sources.tcl"]
