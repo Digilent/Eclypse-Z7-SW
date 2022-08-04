@@ -1,11 +1,11 @@
 #include "xparameters.h"
 #include "xil_printf.h"
-#include"xil_cache.h"
+#include "xil_cache.h"
 #include "sleep.h"
-#include "test_stream_sink/test_stream_sink.h"
-#include "mm2s_transfer/mm2s_transfer.h"
+#include "test_stream_sink.h"
+#include "mm2s_transfer.h"
 #include "xuartps.h"
-#include "./zmod_awg_axi_configuration.h"
+#include "zmod_awg_axi_configuration.h"
 
 #define UART_ID XPAR_PS7_UART_0_DEVICE_ID
 
