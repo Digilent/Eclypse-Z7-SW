@@ -8,6 +8,7 @@
 #include "zmod_scope_axi_configuration.h"
 #include "manual_trigger.h"
 #include "xstatus.h"
+#include "userregisters.h"
 
 #define DMA_ID XPAR_ZMODSCOPE_PORTA_S2MMDMATRANSFER_0_AXI_DMA_0_DEVICE_ID
 #define DMA_BURST_SIZE XPAR_ZMODSCOPE_PORTA_S2MMDMATRANSFER_0_AXI_DMA_0_S2MM_BURST_SIZE
@@ -15,8 +16,9 @@
 
 #define TRIGGER_CTRL_BASEADDR XPAR_ZMODSCOPE_PORTA_TRIGGERDETECTOR_0_TRIGGERCONTROL_0_S_AXI_CONTROL_BASEADDR
 #define SOURCE_MONITOR_BASEADDR XPAR_ZMODSCOPE_PORTA_AXISTREAMSOURCEMONITOR_0_AXISTREAMSOURCEMONIT_0_S_AXI_CONTROL_BASEADDR
-#define MANUAL_TRIGGER_BASEADDR XPAR_ZMODSCOPE_PORTA_MANUALTRIGGER_0_S_AXI_CONTROL_BASEADDR
+#define MANUAL_TRIGGER_BASEADDR XPAR_ZMODSCOPE_PORTA_TRIGGERGENERATOR_MANUALTRIGGER_0_S_AXI_CONTROL_BASEADDR
 #define SCOPE_BASEADDR XPAR_ZMODSCOPE_PORTA_ZMODSCOPEFRONTEND_0_ZMODSCOPEAXICONFIGUR_0_BASEADDR
+#define LEVELTRIGGER_BASEADDR XPAR_ZMODSCOPE_PORTA_TRIGGERGENERATOR_USERREGISTERS_0_S_AXI_CONTROL_BASEADDR
 
 #define ZMOD_SCOPE_RESOLUTION 10
 #define ZMOD_SCOPE_SAMPLE_RATE 125000000
@@ -25,6 +27,8 @@
 
 u16 ChannelData(u8 channel, u32 data, u8 resolution)
 {
+	//	Channel1 -> cDataAxisTdata[31:16]
+	//	Channel2 -> cDataAxisTdata[15:0]
 	return (channel ? (data >> (16 - resolution)) : (data >> (32 - resolution))) & ((1 << resolution) - 1);
 }
 
@@ -77,6 +81,7 @@ typedef struct InputPipeline {
 	TriggerControl Trig;
 	AxiStreamSourceMonitor TrafficGen;
 	ZmodScope Scope;
+	UserRegisters LevelTrigger;
 } InputPipeline;
 
 XStatus MinMaxAcquisition (InputPipeline *InstPtr, const ZmodScopeRelayConfig Relays) {
@@ -94,6 +99,8 @@ XStatus MinMaxAcquisition (InputPipeline *InstPtr, const ZmodScopeRelayConfig Re
 	// Define the acquisition window
 	const u32 BufferLength = 0x1000;
 	const u32 TriggerPosition = BufferLength / 4;
+	float SamplePeriod_ns = 8.0f;
+	float BufferPeriod_ns = SamplePeriod_ns * BufferLength;
 
 	// Initialize the buffer for receiving data from PL
 	u32 *RxBuffer = NULL;
@@ -103,7 +110,7 @@ XStatus MinMaxAcquisition (InputPipeline *InstPtr, const ZmodScopeRelayConfig Re
 		xil_printf("ERROR: Buffer allocation failed, check heap size in lscript.ld\r\n");
 		return XST_FAILURE;
 	} else {
-		xil_printf("Buffer allocated\r\n");
+		xil_printf("Buffer for %d ns of samples allocated\r\n", (int)BufferPeriod_ns);
 	}
 
 	memset(RxBuffer, 0, BufferLength * sizeof(u32));
@@ -145,7 +152,7 @@ XStatus MinMaxAcquisition (InputPipeline *InstPtr, const ZmodScopeRelayConfig Re
 
 	xil_printf("Trigger detected\r\n");
 
-	u32 *BufferHeadPtr = FindStartOfBuffer(S2mmPtr);
+	u32 *BufferHeadPtr = S2mmFindStartOfBuffer(S2mmPtr);
 	if (BufferHeadPtr == NULL) {
 		xil_printf("ERROR: No buffer head detected\r\n");
 	}
@@ -203,7 +210,7 @@ XStatus MinMaxAcquisition (InputPipeline *InstPtr, const ZmodScopeRelayConfig Re
 	xil_printf("  ch2Min_mV: %d mV (0x%04x)\r\n", (int)ch2Min_mV, (int)ch2RawMin);
 
 	// Clean up allocated memory
-	S2mmDetachBuffer(S2mmPtr);
+	S2mmCleanup(S2mmPtr);
 	free(RxBuffer);
 
 	xil_printf("Exit\r\n\r\n");
@@ -269,7 +276,7 @@ XStatus TestInputWithMonitor (InputPipeline *InstPtr) {
 	// Wait for trigger hardware to go idle
 	while (!TriggerGetIdle(TrigPtr));
 
-	u32 *BufferHeadPtr = FindStartOfBuffer(S2mmPtr);
+	u32 *BufferHeadPtr = S2mmFindStartOfBuffer(S2mmPtr);
 	if (BufferHeadPtr == NULL) {
 		xil_printf("ERROR: No buffer head detected\r\n");
 	}
@@ -310,7 +317,7 @@ XStatus TestInputWithMonitor (InputPipeline *InstPtr) {
 	}
 
 	// Clean up allocated memory
-	S2mmDetachBuffer(S2mmPtr);
+	S2mmCleanup(S2mmPtr);
 	free(RxBuffer);
 
 	xil_printf("Exit\r\n\r\n");
@@ -379,7 +386,7 @@ XStatus AcquireDataToConsole (InputPipeline *InstPtr, ZmodScopeRelayConfig Relay
 	// Wait for trigger hardware to go idle
 	while (!TriggerGetIdle(TrigPtr));
 
-	u32 *BufferHeadPtr = FindStartOfBuffer(S2mmPtr);
+	u32 *BufferHeadPtr = S2mmFindStartOfBuffer(S2mmPtr);
 	if (BufferHeadPtr == NULL) {
 	xil_printf("ERROR: No buffer head detected\r\n");
 	}
@@ -411,12 +418,121 @@ XStatus AcquireDataToConsole (InputPipeline *InstPtr, ZmodScopeRelayConfig Relay
 	}
 
 	// Clean up allocated memory
-	S2mmDetachBuffer(S2mmPtr);
+	S2mmCleanup(S2mmPtr);
 	free(RxBuffer);
 
 	xil_printf("Exit\r\n\r\n");
 	return XST_SUCCESS;
 }
+
+
+XStatus LevelTriggerAcquisition (InputPipeline *InstPtr, ZmodScopeRelayConfig Relays, u32 TrigEnable, u16 Ch1Level, u16 Ch2Level) {
+	// Initialize device drivers
+	S2mmTransferHierarchy *S2mmPtr = &(InstPtr->S2mm);
+	ManualTrigger *ManPtr = &(InstPtr->Man);
+	TriggerControl *TrigPtr = &(InstPtr->Trig);
+	AxiStreamSourceMonitor *TrafficGenPtr = &(InstPtr->TrafficGen);
+	ZmodScope *ScopePtr = &(InstPtr->Scope);
+	UserRegisters *LevelTriggerPtr = &(InstPtr->LevelTrigger);
+
+	// Define the acquisition window
+	//	const u32 SampleRateMegaSamplesPerSecond = 40;
+	//	const u32 SamplePeriodNanoseconds = 25;
+	// fails at bufferlength=0x100
+	const u32 BufferLength = 0x1000;//0x400000; // 0x400000 / 125 MS/s = 3.3 ms
+	const u32 TriggerPosition = 0;//BufferLength / 4;
+
+	// Initialize the buffer for receiving data from PL
+	u32 *RxBuffer = NULL;
+
+	RxBuffer = malloc(BufferLength * sizeof(u32));
+	if (RxBuffer == NULL) {
+		xil_printf("ERROR: Buffer allocation failed, check heap size in lscript.ld\r\n");
+		return XST_FAILURE;
+	}
+
+	memset(RxBuffer, 0, BufferLength * sizeof(u32));
+
+	// Create a Dma Bd Ring and map the buffer to it
+	S2mmAttachBuffer(S2mmPtr, (UINTPTR)RxBuffer, BufferLength);
+
+	// Flush the cache before any transfer
+	Xil_DCacheFlushRange((UINTPTR)RxBuffer, BufferLength * sizeof(u32));
+
+	// Configure the trigger
+	TriggerSetPosition (TrigPtr, BufferLength, TriggerPosition);
+	TriggerSetEnable (TrigPtr, TrigEnable);
+
+	u32 Levels = ((u32)(Ch1Level) << 16) | (Ch2Level);
+//	u32 Levels = ((u32)(Ch2Level) << 16) | (Ch1Level);
+	UserRegisters_WriteReg(LevelTriggerPtr, USER_REGISTERS_OUTPUT0_REG_OFFSET, Levels);
+
+	AxiStreamSourceMonitorSetSelect(TrafficGenPtr, SWITCH_SOURCE_SCOPE);
+
+	xil_printf("Initialization done\r\n");
+
+	// Start up the input pipeline from back to front
+	// Start the DMA receive
+	S2mmStartCyclicTransfer(S2mmPtr);
+
+	// Start the trigger hardware
+	TriggerStart(TrigPtr);
+
+	// FIXME: Start the data source first to ensure that the pipeline is flushed into an idle trigger module?
+
+	WriteZmodScopeRelayConfig(ScopePtr, Relays);
+
+	// Start the Zmod data stream
+	ZmodScope_StartStream(ScopePtr);
+
+	// Apply a manual trigger
+	sleep(1);
+	ManualTriggerIssueTrigger(ManPtr);
+
+	// Wait for trigger hardware to go idle
+	xil_printf("Waiting for trigger...\r\n");
+	while (!TriggerGetIdle(TrigPtr));
+
+	// FIXME: maybe wait a bit to ensure that the RXEOF frame transfer has completed
+	u32 *BufferHeadPtr = S2mmFindStartOfBuffer(S2mmPtr);
+	if (BufferHeadPtr == NULL) {
+		xil_printf("ERROR: No buffer head detected\r\n");
+	}
+
+	u32 BufferHeadIndex = (((u32)BufferHeadPtr - (u32)RxBuffer) / sizeof(u32)) % BufferLength;
+
+	u32 TriggerDetected = TriggerGetDetected(TrigPtr);
+
+	xil_printf("Buffer base address: %08x\r\n", RxBuffer);
+	xil_printf("Buffer high address: %08x\r\n", ((u32)RxBuffer) + ((BufferLength-1) * sizeof(u32)));
+	xil_printf("Length of buffer (words): %d\r\n", BufferLength);
+	xil_printf("Index of buffer head: %d\r\n", BufferHeadIndex);
+	xil_printf("Trigger position: %d\r\n", TriggerPosition);
+	xil_printf("Index of trigger position: %d\r\n", (BufferHeadIndex + TriggerPosition) % BufferLength);
+	xil_printf("Detected trigger condition: %08x\r\n", TriggerDetected);
+
+	// Invalidate the cache to ensure acquired data can be read
+	Xil_DCacheInvalidateRange((UINTPTR)RxBuffer, BufferLength * sizeof(u32));
+
+	xil_printf("Transfer done\r\n");
+
+	for (u32 i = 0; i < BufferLength; i++) {
+		u32 index = (i + BufferHeadIndex) % BufferLength;
+		float ch1_mV = 1000.0f * RawDataToVolts(RxBuffer[index], 0, ZMOD_SCOPE_RESOLUTION, Relays.Ch1Range);
+		float ch2_mV = 1000.0f * RawDataToVolts(RxBuffer[index], 1, ZMOD_SCOPE_RESOLUTION, Relays.Ch2Range);
+		const u16 ch1_raw = ChannelData(0, RxBuffer[index], ZMOD_SCOPE_RESOLUTION);
+		const u16 ch2_raw = ChannelData(1, RxBuffer[index], ZMOD_SCOPE_RESOLUTION);
+		xil_printf("@%08x\t%04x\t%04x\t%d\t%d\r\n", (u32)RxBuffer + index*sizeof(u32), ch1_raw, ch2_raw, (int)ch1_mV, (int)ch2_mV);
+	}
+
+	// Clean up allocated memory
+	S2mmCleanup(S2mmPtr);
+	free(RxBuffer);
+
+	xil_printf("Exit\r\n\r\n");
+	return XST_SUCCESS;
+}
+
 
 int main () {
 	// Initialize device drivers
@@ -428,13 +544,16 @@ int main () {
 	ManualTrigger_Initialize(&(Pipe.Man), MANUAL_TRIGGER_BASEADDR);
 	AxiStreamSourceMonitor_Initialize(&(Pipe.TrafficGen), SOURCE_MONITOR_BASEADDR);
 	ZmodScope_Initialize(&(Pipe.Scope), SCOPE_BASEADDR);
+	UserRegisters_Initialize(&(Pipe.LevelTrigger), LEVELTRIGGER_BASEADDR);
 
 	xil_printf("Done initializing device drivers\r\n");
 
 	ZmodScopeRelayConfig CouplingTestRelays = {0, 0, 1, 0};
 	ZmodScopeRelayConfig GainTestRelays = {1, 0, 0, 0};
+	ZmodScopeRelayConfig LowRangeDcCoupling = {0, 0, 1, 1};
 
-	MinMaxAcquisition(&Pipe, CouplingTestRelays);
-	MinMaxAcquisition(&Pipe, GainTestRelays);
+	LevelTriggerAcquisition (&Pipe, LowRangeDcCoupling, 0b00011, 0x0000, 0x01F0);
+//	MinMaxAcquisition(&Pipe, CouplingTestRelays);
+//	MinMaxAcquisition(&Pipe, GainTestRelays);
 
 }
