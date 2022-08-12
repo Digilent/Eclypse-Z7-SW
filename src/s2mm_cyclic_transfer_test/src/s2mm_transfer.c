@@ -1,8 +1,21 @@
 #include "s2mm_transfer.h"
 #include "xil_printf.h"
+#include <stdlib.h>
 
 void AllocateBdSpace();
 
+#define RoundUpDivide(a, b) ((a / b) + (a % b != 0))
+
+/****************************************************************************/
+/**
+* Initializes the stream to memory-mapped transfer engine
+*
+* @param	InstPtr is the device handler instance to operate on.
+* @param	DmaDeviceId is the device ID for the AXI DMA IP used to perform the transfers, pulled from xparameters
+*
+* @note Max burst size is stored to later be used in computing DMA transfer block sizes. No buffer is attached yet and the descriptor space is not yet allocated.
+*
+*****************************************************************************/
 void S2mmInitialize (S2mmTransferHierarchy *InstPtr, const u32 DmaDeviceId) {
 	XAxiDma_Config *CfgPtr;
 
@@ -14,10 +27,37 @@ void S2mmInitialize (S2mmTransferHierarchy *InstPtr, const u32 DmaDeviceId) {
 	InstPtr->NumBds = 0;
 	InstPtr->BdSpace = NULL;
 	InstPtr->BufferBaseAddr = NULL;
+	InstPtr->BufferLength = 0;
 }
 
-#define RoundUpDivide(a, b) ((a / b) + (a % b != 0))
-
+/****************************************************************************/
+/**
+* Allocates memory for block descriptors and creates and initializes the block descriptors for a specific buffer address and size
+*
+* @param	InstPtr is the device handler instance to operate on.
+* @param	DmaDeviceId is the device ID for the AXI DMA IP used to perform the transfers, pulled from xparameters
+*
+* @note The same buffer can be reused, however if either the size or address is changed, new block descriptors need to be allocated.
+*       Approximately 16 * BufferLength * sizeof(u32) / MaxBurstLengthBytes words are allocated, with additional padding space to ensure that
+*       the block descriptor alignment requirement is satisfied.
+*       Blocks are used to describe a single burst, and their length is set to the max burst size of the AXI DMA. This is not an inherent
+*       requirement imposed by the AXI DMA, and theoretically any block size could be used. However, some minimum burst size exists such that
+*       AXI4-full protocol overhead significantly affects the bandwidth of the transfer. It may be possible to use short bursts as long as the
+*       following burst is long enough for the scatter gather interface to keep up.
+*       FIXME: It may be possible to use only a single block descriptor with cyclic mode. It should be determined whether the DMA engine will
+*              repeatedly fetch the same block.
+*		FIXME: The minimum block size that can be consistently supported should be experimentally determined.
+*		FIXME: Currently, the DMA core must be reset in order to cancel any blocks still pending after the final block in an arbitrarily-long
+*		       transfer has been received. These blocks must be submitted to hardware in order since it is unknown while the final block is in flight
+*		       whether it is actually final or not, it is unknown whether the next acquisition will reuse the same buffer, and the blocks must be
+*		       available to hardware to prefetch before the block before them is complete.
+*		FIXME: At time of writing, buffer length is restricted to values of N * MaxBurstLengthBytes, where N is an integer and MaxBurstLengthBytes
+*		       is 256x64/8=1024 bytes (BurstSize x DataWidth bits). Whether BufferLength meets this requirement is not checked within this function.
+*		       If buffer length doesn't meet this requirement, S2mmFindStartOfBuffer may not return the correct address in some edge cases.
+*		FIXME: It should be explored whether multiple buffers can easily be attached and switched out (perhaps by taking advantage of multiple Rx rings)
+*			   in order to allow an acquisition to occur at the same time as a previous acquisition is being transferred to the host.
+*		FIXME: Errors should be returned in several bad-status cases (eg if malloc or some XAxiDma API call fail).
+*****************************************************************************/
 void S2mmAttachBuffer (S2mmTransferHierarchy *InstPtr, UINTPTR Buffer, u32 BufferLength) {
 	XAxiDma_BdRing *RingPtr = NULL;
 	XAxiDma *DmaPtr = NULL;
@@ -38,6 +78,7 @@ void S2mmAttachBuffer (S2mmTransferHierarchy *InstPtr, UINTPTR Buffer, u32 Buffe
 	RingPtr = XAxiDma_GetRxRing(DmaPtr);
 
 	InstPtr->BufferBaseAddr = (u32*)Buffer;
+	InstPtr->BufferLength = BufferLength;
 
 	// Allocate the memory space holding DMA block descriptors
 	// Note: Xilinx doesn't support dynamic allocation of aligned memory, so we need to allocate more memory than is actually needed in order to guarantee alignment
@@ -107,14 +148,42 @@ void S2mmAttachBuffer (S2mmTransferHierarchy *InstPtr, UINTPTR Buffer, u32 Buffe
 	}
 }
 
-void S2mmDetachBuffer(S2mmTransferHierarchy *InstPtr) {
+/****************************************************************************/
+/**
+* Cleans up information stored in the device handler about the attached buffer and frees memory allocated for the block descriptors
+*
+* @param	InstPtr is the device handler instance to operate on.
+*
+* @note Function currently does not work due to a data abort exception being thrown when freeing the BdSpace. Cause is unknown at this time.
+*
+*****************************************************************************/
+void S2mmCleanup(S2mmTransferHierarchy *InstPtr) {
+	// Spin down the hardware.
+	// FIXME: check if
+	XAxiDma_Pause(&(InstPtr->Dma));
+	XAxiDma_Reset(&(InstPtr->Dma));
+	while (!XAxiDma_ResetIsDone(&(InstPtr->Dma)));
+
 	// Clean up Bds and deallocate the BdSpace
 	InstPtr->BufferBaseAddr = NULL;
+	InstPtr->BufferLength = 0;
 	InstPtr->NumBds = 0;
-	free(InstPtr->BdSpace);
+	free((void*)(InstPtr->BdSpace)); // FIXME: throws data abort exception
 	InstPtr->BdSpace = NULL;
 }
 
+/****************************************************************************/
+/**
+* Initiates the acquisition by submitting the already-configured BdRing to hardware.
+*
+* @param	InstPtr is the device handler instance to operate on.
+*
+* @note This function should be called prior to enabling all upstream IP, as ready can remain high while the transfer is inactive,
+* 	    allowing data to flow into buffers, corrupting the first few samples of an acquisition.
+* 	    FIXME: Consider whether cyclic mode should be set when the ring is first being configured.
+* 	    FIXME: Return error instead of printing here.
+*
+*****************************************************************************/
 void S2mmStartCyclicTransfer (S2mmTransferHierarchy *InstPtr) {
 	XAxiDma_BdRing *RingPtr;
 	RingPtr = XAxiDma_GetRxRing(&(InstPtr->Dma));
@@ -129,28 +198,57 @@ void S2mmStartCyclicTransfer (S2mmTransferHierarchy *InstPtr) {
 	}
 }
 
-u32 *FindStartOfBuffer (S2mmTransferHierarchy *InstPtr) {
+/****************************************************************************/
+/**
+* After an acquisition has completed, iterates over the block descriptors to find the one where the EOF status bit is set, indicating
+* 	the position of the stream beat where tlast was asserted, in order to find the index in the buffer for the first sample.
+*
+* @param	InstPtr is the device handler instance to operate on.
+* @return	Address of the start of the buffer.
+*
+* @note Samples are laid out sequentially in memory. In order to iterate across the buffer, a loop should start at StartOfBuffer, iterate until it hits
+* 		the top of the buffer address space as determined by InstPtr->BufferBaseAddr + InstPtr->BufferLength, roll over to InstPtr->BufferBaseAddr, then
+* 		iterate back up to StartOfBuffer.
+* 		For example, a 10-sample buffer where the last beat fell on index 3 would look as follows: 6789012345
+*
+*****************************************************************************/
+u32 *S2mmFindStartOfBuffer (S2mmTransferHierarchy *InstPtr) {
 	XAxiDma_BdRing *RingPtr = XAxiDma_GetRxRing(&(InstPtr->Dma));
 	XAxiDma_Bd *BdPtr;
 	u32 ActualLength;
+	u32 *StartOfBuffer = NULL;
 
 	BdPtr = (XAxiDma_Bd*)RingPtr->FirstBdAddr; // this is kind of weird. FIXME find out why this value isn't the one getting returned from BdRingFree
+
+//	NumBd = XAxiDma_BdRingFromHw(RingPtr, XAXIDMA_ALL_BDS, &BdPtr); // potentially use this to clear the processed status fields, if NumBd > 0 then RXEOF exists somewhere, maybe in the HwTail?
 
 	for (u32 i = 0; i < InstPtr->NumBds; i++) {
 		Xil_DCacheInvalidateRange((UINTPTR)BdPtr, XAXIDMA_BD_NUM_WORDS * sizeof(u32));
 
 		u32 Status = XAxiDma_BdGetSts(BdPtr);
-		// RXEOF bit high indicates that tlast occured in that block
+		// RXEOF bit high indicates that tlast occured in that block, ActualLength indicates the tlast position
+		// FIXME: determine whether using the DMA with 64-bit wide AXI master interfaces obscures the position of tlast.
+		// Check if ActualLength shows up as both even and odd. Using the source monitor's traffic generator with
+		// even- and odd-valued level triggers should indicate this.
 		if (Status & XAXIDMA_BD_STS_RXEOF_MASK) {
 			ActualLength = XAxiDma_BdGetActualLength(BdPtr, ((InstPtr->MaxBurstLengthBytes*2)-1));
 			xil_printf("Last beat found:\r\n");
 			xil_printf("  BD base address: %08x\r\n", XAxiDma_BdGetBufAddr(BdPtr));
 			xil_printf("  BD actual length: %08x\r\n", ActualLength);
-			return (u32*)(XAxiDma_BdGetBufAddr(BdPtr) + ActualLength); // FIXME: could return a value past the end of the buffer if ActualLength == BdLength
+			StartOfBuffer = (u32*)(XAxiDma_BdGetBufAddr(BdPtr) + ActualLength);
+
+			// wrap around to the start of the buffer if the calculated address of start goes past the end.
+			// only expected if the final block is completely full, eg ActualLength == BdLength
+			// FIXME: this will fail if bufferLength does not meet the requirement of being an integer multiple of the max burst length
+			if (StartOfBuffer >= InstPtr->BufferBaseAddr + InstPtr->BufferLength) {
+				StartOfBuffer -= InstPtr->BufferLength;
+			}
+
+			return StartOfBuffer;
 		}
 
 		// Advance the pointer to the next descriptor
 		BdPtr = (XAxiDma_Bd *)XAxiDma_BdRingNext(RingPtr, BdPtr);
 	}
-	return 0;
+	return NULL;
 }

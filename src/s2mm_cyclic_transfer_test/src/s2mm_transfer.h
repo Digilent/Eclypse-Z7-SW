@@ -8,16 +8,15 @@ typedef struct {
 	XAxiDma Dma;
 	u32 NumBds;
 	u32 MaxBurstLengthBytes;
+	u32 BufferLength;
 	u32 *BdSpace;
 	u32 *BufferBaseAddr;
 } S2mmTransferHierarchy;
 
-// FIXME: determine if its possible to reuse the same buffer with modified addresses - attach a new buffer without destroying an existing BD space
-
 void S2mmInitialize (S2mmTransferHierarchy *InstPtr, const u32 DmaDeviceId);
 void S2mmAttachBuffer (S2mmTransferHierarchy *InstPtr, UINTPTR Buffer, u32 BufferLength);
-void S2mmDetachBuffer (S2mmTransferHierarchy *InstPtr);
 void S2mmStartCyclicTransfer (S2mmTransferHierarchy *InstPtr);
-u32 *FindStartOfBuffer (S2mmTransferHierarchy *InstPtr);
+u32 *S2mmFindStartOfBuffer (S2mmTransferHierarchy *InstPtr);
+void S2mmCleanup(S2mmTransferHierarchy *InstPtr);
 
 #endif /* end of protection macro */
