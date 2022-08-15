@@ -17,7 +17,7 @@ set app_name [file tail $script_dir]
 set lang "c"
 set domain "standalone_ps7_cortexa9_0"
 set platform "design_1_wrapper"
-set sysproj "dpmutil_system"
+set sysproj "calibration_reader_system"
 
 # Handle dependent variables
 if {$lang == "c"} {
