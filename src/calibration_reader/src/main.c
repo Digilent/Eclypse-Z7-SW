@@ -70,13 +70,11 @@ int main () {
 	// enumerate the Syzygy ports to figure out which have Zmods installed
 	dpmutilFEnum(FALSE, FALSE, PortInfo);
 
-// FIXME: how do enum indices line up with ports? is it consistent?
-
 	SzgDnaHeader DnaHeader;
 	SzgDnaStrings DnaStrings = {0};
 
 	for (u32 iPort = 0; iPort < 8; iPort++) {
-		if (PortInfo[iPort].portType == 0) {
+		if (PortInfo[iPort].portSts.fPresent == 0) {
 			continue;
 		}
 
