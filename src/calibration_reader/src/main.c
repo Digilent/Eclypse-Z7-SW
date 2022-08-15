@@ -58,8 +58,12 @@ ZmodInfo LookupZmodInfo (SzgDnaStrings DnaStrings) {
 	return info;
 }
 
+#define ZMOD_PORT_A_GROUPVIO 0
+#define ZMOD_PORT_B_GROUPVIO 1
+
 int main () {
 	int fdI2cDev = 0; // this isn't using linux so this doesn't matter
+	char *PortName;
 
 	dpmutilPortInfo_t PortInfo[8] = {0};
 
@@ -76,19 +80,30 @@ int main () {
 			continue;
 		}
 
+		switch (PortInfo[iPort].groupVio) {
+		case ZMOD_PORT_A_GROUPVIO:
+			PortName = "Zmod Port A";
+			break;
+		case ZMOD_PORT_B_GROUPVIO:
+			PortName = "Zmod Port B";
+			break;
+		default:
+			PortName = "Invalid VIO Group";
+		}
+
 		SyzygyReadDNAHeader(fdI2cDev, PortInfo[iPort].i2cAddr, &DnaHeader, FALSE);
 		SyzygyReadDNAStrings(fdI2cDev, PortInfo[iPort].i2cAddr, &DnaHeader, &DnaStrings);
 
 		switch (LookupZmodInfo(DnaStrings).family) {
 		case ZmodADC:
-			printf("========= %s Calibration Coefficients =========\r\n", DnaStrings.szProductName);
+			printf("========= %s : %s Calibration Coefficients =========\r\n", PortName, DnaStrings.szProductName);
 			FDisplayZmodADCCal(fdI2cDev, PortInfo[iPort].i2cAddr);
 			ZMOD_ADC_CAL ADCFactoryCalibration, ADCUserCalibration;
 			FGetZmodADCCal(fdI2cDev, PortInfo[iPort].i2cAddr, &ADCFactoryCalibration, &ADCUserCalibration);
 			printf("\r\n");
 			break;
 		case ZmodDAC:
-			printf("========= %s Calibration Coefficients =========\r\n", DnaStrings.szProductName);
+			printf("========= %s : %s Calibration Coefficients =========\r\n", PortName, DnaStrings.szProductName);
 			FDisplayZmodDACCal(fdI2cDev, PortInfo[iPort].i2cAddr);
 			ZMOD_DAC_CAL DACFactoryCalibration, DACUserCalibration;
 			FGetZmodDACCal(fdI2cDev, PortInfo[iPort].i2cAddr, &DACFactoryCalibration, &DACUserCalibration);
