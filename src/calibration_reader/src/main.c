@@ -1,4 +1,5 @@
 #include "./dpmutil/dpmutil.h"
+#include "stdio.h"
 
 typedef enum ZmodFamily {
 	ZmodADC = 0,
