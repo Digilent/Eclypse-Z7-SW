@@ -2,5 +2,5 @@
 	path = scripts
 	url = ../../digilent/digilent-vitis-scripts
 [submodule "src/dpmutil/src/dpmutil"]
-	path = src/dpmutil/src/dpmutil
+	path = src/calibration_reader/src/dpmutil
 	url = https://github.com/digilent/dpmutil
