@@ -56,4 +56,5 @@ app config -set -name $app_name assembler-flags {}
 app config -set -name $app_name compiler-misc {-c -fmessage-length=0 -MT"$@" -mcpu=cortex-a9 -mfpu=vfpv3 -mfloat-abi=hard}
 app config -set -name $app_name compiler-optimization {None (-O0)}
 app config -add -name $app_name include-path $script_dir/src
+app config -add -name $app_name include-path $script_dir/src/dpmutil
 app config -set -name $app_name linker-script $script_dir/src/lscript.ld

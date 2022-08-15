@@ -4,3 +4,9 @@
 [submodule "src/dpmutil/src/dpmutil"]
 	path = src/calibration_reader/src/dpmutil
 	url = https://github.com/digilent/dpmutil
+[submodule "src/mm2s_single_transfer_test/src/dpmutil"]
+	path = src/mm2s_single_transfer_test/src/dpmutil
+	url = https://github.com/digilent/dpmutil
+[submodule "src/s2mm_cyclic_transfer_test/src/dpmutil"]
+	path = src/s2mm_cyclic_transfer_test/src/dpmutil
+	url = https://github.com/digilent/dpmutil
