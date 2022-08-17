@@ -2,13 +2,13 @@
 #include "stdio.h"
 
 #define ZMODFAMILY_ZMODSCOPE 0
-#define ZMODFAMILY ZMODAWG 1
+#define ZMODFAMILY_ZMODAWG 1
 #define ZMODFAMILY_UNSUPPORTED 2
 
 typedef struct ZmodInfo {
 	u8 resolution;
 	float maxSampleRateMHz;
-	ZmodFamily family; // 0 for adc, 1 for dac
+	u32 family; // 0 for adc, 1 for dac
 } ZmodInfo;
 
 ZmodInfo LookupZmodInfo (SzgDnaStrings DnaStrings) {
