@@ -9,6 +9,7 @@
 #include "manual_trigger.h"
 #include "xstatus.h"
 #include "userregisters.h"
+#include "scope_calibration.h"
 
 #define DMA_ID XPAR_ZMODSCOPE_PORTA_S2MMDMATRANSFER_0_AXI_DMA_0_DEVICE_ID
 #define DMA_BURST_SIZE XPAR_ZMODSCOPE_PORTA_S2MMDMATRANSFER_0_AXI_DMA_0_S2MM_BURST_SIZE
@@ -23,10 +24,13 @@
 #define ZMOD_SCOPE_RESOLUTION 10
 #define ZMOD_SCOPE_SAMPLE_RATE 125000000
 
+#define SCOPE_PORT ZMODSCOPE_ZMOD_PORT_A_VIO_GROUP
+
 // Function definitions
 
-u16 ChannelData(u8 channel, u32 data, u8 resolution)
-{
+// FIXME: only the actual significant bits should be considered. the rest are discarded.
+// the result of the multiply in calibration dsp hardware might push through some extraneous bits below the sample, but we discard them here
+u16 ChannelData(u8 channel, u32 data, u8 resolution) {
 	//	Channel1 -> cDataAxisTdata[31:16]
 	//	Channel2 -> cDataAxisTdata[15:0]
 	return (channel ? (data >> (16 - resolution)) : (data >> (32 - resolution))) & ((1 << resolution) - 1);
@@ -44,11 +48,13 @@ u32 ToSigned(u32 value, u8 noBits) {
 	return sValue;
 }
 
+// absolute resolution depends on range and resolution.
+// FIXME: make sure that range and gain are not being used interchangeably
 float GetVoltFromSignedRaw(s32 raw, u8 gain, u8 resolution) {
 	#define IDEAL_RANGE_ADC_LOW 25.0f
 	#define IDEAL_RANGE_ADC_HIGH 1.0f
 	float vMax = gain ? IDEAL_RANGE_ADC_HIGH : IDEAL_RANGE_ADC_LOW;
-	float fval = (float)raw * vMax / (float)(1<<(resolution - 1));
+	float fval = (float)raw * vMax / (float)(1 << (resolution - 1));
 	return fval;
 }
 
@@ -65,13 +71,13 @@ typedef struct {
 	u8 Ch2Coupling; // 0 = AC; 1 = DC
 } ZmodScopeRelayConfig;
 
-void WriteZmodScopeRelayConfig(ZmodScope *InstPtr, ZmodScopeRelayConfig Config) {
+void WriteZmodScopeRelayConfig(ZmodScope *InstPtr, ZmodScopeRelayConfig Config, u8 TestMode) {
 	u32 ScopeConfig = 0;
 	ScopeConfig |= Config.Ch1Range * AXI_ZMOD_SCOPE_CONFIG_CHANNEL_1_GAIN_SELECT_MASK;
 	ScopeConfig |= Config.Ch2Range * AXI_ZMOD_SCOPE_CONFIG_CHANNEL_2_GAIN_SELECT_MASK;
 	ScopeConfig |= Config.Ch1Coupling * AXI_ZMOD_SCOPE_CONFIG_CHANNEL_1_COUPLING_SELECT_MASK;
 	ScopeConfig |= Config.Ch2Coupling * AXI_ZMOD_SCOPE_CONFIG_CHANNEL_2_COUPLING_SELECT_MASK;
-//	ScopeConfig |= TestMode * AXI_ZMOD_SCOPE_CONFIG_TEST_MODE_MASK;
+	ScopeConfig |= TestMode * AXI_ZMOD_SCOPE_CONFIG_TEST_MODE_MASK;
 	ZmodScope_SetConfig(InstPtr, ScopeConfig);
 }
 
@@ -119,8 +125,15 @@ XStatus MinMaxAcquisition (InputPipeline *InstPtr, const ZmodScopeRelayConfig Re
 	// Create a Dma Bd Ring and map the buffer to it
 	S2mmAttachBuffer(S2mmPtr, (UINTPTR)RxBuffer, BufferLength);
 
+	// Get the factory calibration coefficients and apply them to the lowlevel IP
+	ZmodScope_CalibrationCoefficients factory, _unused_;
+	if (ZmodScope_ReadCoefficientsFromDna(SCOPE_PORT, &factory, &_unused_) != XST_SUCCESS) {
+		xil_printf("ERROR: failed to read Zmod Scope calibration coefficients");
+	}
+	ZmodScope_SetCalibrationCoefficients(ScopePtr, factory);
+
 	// Write to the Scope relay pins
-	WriteZmodScopeRelayConfig(ScopePtr, Relays);
+	WriteZmodScopeRelayConfig(ScopePtr, Relays, 0);
 
 	// Make sure data will be coming from the scope, not the monitor
 	AxiStreamSourceMonitorSetSelect(TrafficGenPtr, SWITCH_SOURCE_SCOPE);
@@ -356,6 +369,21 @@ XStatus AcquireDataToConsole (InputPipeline *InstPtr, ZmodScopeRelayConfig Relay
 	// Flush the cache before any transfer
 	Xil_DCacheFlushRange((UINTPTR)RxBuffer, BufferLength * sizeof(u32));
 
+
+
+	// Get the factory calibration coefficients and apply them to the lowlevel IP
+	ZmodScope_CalibrationCoefficients factory, _unused_;
+	if (ZmodScope_ReadCoefficientsFromDna(SCOPE_PORT, &factory, &_unused_) != XST_SUCCESS) {
+		xil_printf("ERROR: failed to read Zmod Scope calibration coefficients");
+	}
+	ZmodScope_SetCalibrationCoefficients(ScopePtr, factory);
+
+	// Write to the Scope relay pins
+
+	WriteZmodScopeRelayConfig(ScopePtr, Relays, 1);
+
+
+
 	// Configure the trigger
 	TriggerSetPosition (TrigPtr, BufferLength, TriggerPosition);
 	TriggerSetEnable (TrigPtr, 0xFFFFFFFF);
@@ -374,8 +402,6 @@ XStatus AcquireDataToConsole (InputPipeline *InstPtr, ZmodScopeRelayConfig Relay
 
 	// FIXME: Start the data source first to ensure that the pipeline is flushed into an idle trigger module?
 
-	WriteZmodScopeRelayConfig(ScopePtr, Relays);
-
 	// Start the Zmod data stream
 	ZmodScope_StartStream(ScopePtr);
 
@@ -388,7 +414,7 @@ XStatus AcquireDataToConsole (InputPipeline *InstPtr, ZmodScopeRelayConfig Relay
 
 	u32 *BufferHeadPtr = S2mmFindStartOfBuffer(S2mmPtr);
 	if (BufferHeadPtr == NULL) {
-	xil_printf("ERROR: No buffer head detected\r\n");
+		xil_printf("ERROR: No buffer head detected\r\n");
 	}
 
 	u32 BufferHeadIndex = (((u32)BufferHeadPtr - (u32)RxBuffer) / sizeof(u32)) % BufferLength;
@@ -425,7 +451,6 @@ XStatus AcquireDataToConsole (InputPipeline *InstPtr, ZmodScopeRelayConfig Relay
 	return XST_SUCCESS;
 }
 
-
 XStatus LevelTriggerAcquisition (InputPipeline *InstPtr, ZmodScopeRelayConfig Relays, u32 TrigEnable, u16 Ch1Level, u16 Ch2Level) {
 	// Initialize device drivers
 	S2mmTransferHierarchy *S2mmPtr = &(InstPtr->S2mm);
@@ -441,6 +466,21 @@ XStatus LevelTriggerAcquisition (InputPipeline *InstPtr, ZmodScopeRelayConfig Re
 	// fails at bufferlength=0x100
 	const u32 BufferLength = 0x1000;//0x400000; // 0x400000 / 125 MS/s = 3.3 ms
 	const u32 TriggerPosition = 0;//BufferLength / 4;
+
+
+	// Get the factory calibration coefficients and apply them to the lowlevel IP
+	// FIXME mallocing of the syzygy dna name strings is currently failing
+	ZmodScope_CalibrationCoefficients factory, _unused_;
+	if (ZmodScope_ReadCoefficientsFromDna(SCOPE_PORT, &factory, &_unused_) != XST_SUCCESS) {
+		xil_printf("ERROR: failed to read Zmod Scope calibration coefficients");
+	}
+	ZmodScope_SetCalibrationCoefficients(ScopePtr, factory);
+
+	// Set config register
+	const u8 TestMode = 0;
+	WriteZmodScopeRelayConfig(ScopePtr, Relays, TestMode);
+	xil_printf("TestMode: %d\r\n", TestMode);
+
 
 	// Initialize the buffer for receiving data from PL
 	u32 *RxBuffer = NULL;
@@ -458,6 +498,10 @@ XStatus LevelTriggerAcquisition (InputPipeline *InstPtr, ZmodScopeRelayConfig Re
 
 	// Flush the cache before any transfer
 	Xil_DCacheFlushRange((UINTPTR)RxBuffer, BufferLength * sizeof(u32));
+
+
+	// channel 1 breaks for zmod scope 1010 when any calibration coefficient is applied (testmode=0)
+
 
 	// Configure the trigger
 	TriggerSetPosition (TrigPtr, BufferLength, TriggerPosition);
@@ -479,8 +523,6 @@ XStatus LevelTriggerAcquisition (InputPipeline *InstPtr, ZmodScopeRelayConfig Re
 	TriggerStart(TrigPtr);
 
 	// FIXME: Start the data source first to ensure that the pipeline is flushed into an idle trigger module?
-
-	WriteZmodScopeRelayConfig(ScopePtr, Relays);
 
 	// Start the Zmod data stream
 	ZmodScope_StartStream(ScopePtr);
@@ -522,7 +564,7 @@ XStatus LevelTriggerAcquisition (InputPipeline *InstPtr, ZmodScopeRelayConfig Re
 		float ch2_mV = 1000.0f * RawDataToVolts(RxBuffer[index], 1, ZMOD_SCOPE_RESOLUTION, Relays.Ch2Range);
 		const u16 ch1_raw = ChannelData(0, RxBuffer[index], ZMOD_SCOPE_RESOLUTION);
 		const u16 ch2_raw = ChannelData(1, RxBuffer[index], ZMOD_SCOPE_RESOLUTION);
-		xil_printf("@%08x\t%04x\t%04x\t%d\t%d\r\n", (u32)RxBuffer + index*sizeof(u32), ch1_raw, ch2_raw, (int)ch1_mV, (int)ch2_mV);
+		xil_printf("@%08x\t%08x\t%04x\t%04x\t%d\t%d\r\n", (u32)RxBuffer + index*sizeof(u32), RxBuffer[index], ch1_raw, ch2_raw, (int)ch1_mV, (int)ch2_mV);
 	}
 
 	// Clean up allocated memory
@@ -552,7 +594,7 @@ int main () {
 	ZmodScopeRelayConfig GainTestRelays = {1, 0, 0, 0};
 	ZmodScopeRelayConfig LowRangeDcCoupling = {0, 0, 1, 1};
 
-	LevelTriggerAcquisition (&Pipe, LowRangeDcCoupling, 0b00011, 0x0000, 0x01F0);
+	LevelTriggerAcquisition (&Pipe, GainTestRelays, 0b00011, 0x0000, 0x01F0);
 //	MinMaxAcquisition(&Pipe, CouplingTestRelays);
 //	MinMaxAcquisition(&Pipe, GainTestRelays);
 

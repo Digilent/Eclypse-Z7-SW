@@ -98,7 +98,6 @@ typedef struct {
 	UINTPTR BaseAddr;
 	u8 Range; // 1 high; 0 low
 	u8 Coupling; // 1 DC; 0 AC
-	ZmodScope_CalibrationCoefficients CalibrationCoefficients;
 } ZmodScope;
 
 #define ZmodScope_In32	Xil_In32
@@ -119,7 +118,6 @@ void ZmodScope_SetConfig(ZmodScope *InstPtr, u32 Config);
 u32 ZmodScope_GetConfig(ZmodScope *InstPtr);
 
 void ZmodScope_SetCalibrationCoefficients(ZmodScope *InstPtr, ZmodScope_CalibrationCoefficients CalibrationCoefficients);
-ZmodScope_CalibrationCoefficients ZmodScope_GetCalibrationCoefficients(ZmodScope *InstPtr);
 
 void ZmodScope_StartStream(ZmodScope *InstPtr);
 

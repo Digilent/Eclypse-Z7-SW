@@ -23,14 +23,16 @@ void ZmodScope_Initialize (ZmodScope *InstPtr, u32 BaseAddr) {
 	IssueApStart(InstPtr);
 
 	// Set default coefficients
-	InstPtr->CalibrationCoefficients.Channel1_HighGainMultiplicative = DefaultMultCoeff;
-	InstPtr->CalibrationCoefficients.Channel1_LowGainMultiplicative = DefaultMultCoeff;
-	InstPtr->CalibrationCoefficients.Channel1_HighGainAdditive = 0;
-	InstPtr->CalibrationCoefficients.Channel1_LowGainAdditive = 0;
-	InstPtr->CalibrationCoefficients.Channel2_HighGainMultiplicative = DefaultMultCoeff;
-	InstPtr->CalibrationCoefficients.Channel2_LowGainMultiplicative = DefaultMultCoeff;
-	InstPtr->CalibrationCoefficients.Channel2_HighGainAdditive = 0;
-	InstPtr->CalibrationCoefficients.Channel2_LowGainAdditive = 0;
+	ZmodScope_CalibrationCoefficients DefaultCoeffs;
+	DefaultCoeffs.Channel1_HighGainMultiplicative = DefaultMultCoeff;
+	DefaultCoeffs.Channel1_LowGainMultiplicative = DefaultMultCoeff;
+	DefaultCoeffs.Channel1_HighGainAdditive = 0;
+	DefaultCoeffs.Channel1_LowGainAdditive = 0;
+	DefaultCoeffs.Channel2_HighGainMultiplicative = DefaultMultCoeff;
+	DefaultCoeffs.Channel2_LowGainMultiplicative = DefaultMultCoeff;
+	DefaultCoeffs.Channel2_HighGainAdditive = 0;
+	DefaultCoeffs.Channel2_LowGainAdditive = 0;
+	ZmodScope_SetCalibrationCoefficients(InstPtr, DefaultCoeffs);
 }
 
 // provide software access to only these:
@@ -113,20 +115,25 @@ void ZmodScope_StartStream (ZmodScope *InstPtr) {
 		xil_printf("Data overflow error\r\n");
 	}
 
-	/* Set some default coefficients to pull raw data */
-	ZmodScope_WriteReg(InstPtr->BaseAddr, AXI_ZMOD_SCOPE_CHANNEL_1_HIGH_GAIN_MULT_COEFF_REG_OFFSET, InstPtr->CalibrationCoefficients.Channel1_HighGainMultiplicative);
-	ZmodScope_WriteReg(InstPtr->BaseAddr, AXI_ZMOD_SCOPE_CHANNEL_1_LOW_GAIN_MULT_COEFF_REG_OFFSET,  InstPtr->CalibrationCoefficients.Channel1_LowGainMultiplicative);
-	ZmodScope_WriteReg(InstPtr->BaseAddr, AXI_ZMOD_SCOPE_CHANNEL_1_HIGH_GAIN_ADD_COEFF_REG_OFFSET,  InstPtr->CalibrationCoefficients.Channel1_HighGainAdditive);
-	ZmodScope_WriteReg(InstPtr->BaseAddr, AXI_ZMOD_SCOPE_CHANNEL_1_LOW_GAIN_ADD_COEFF_REG_OFFSET,   InstPtr->CalibrationCoefficients.Channel1_LowGainAdditive);
-	ZmodScope_WriteReg(InstPtr->BaseAddr, AXI_ZMOD_SCOPE_CHANNEL_2_HIGH_GAIN_MULT_COEFF_REG_OFFSET, InstPtr->CalibrationCoefficients.Channel2_HighGainMultiplicative);
-	ZmodScope_WriteReg(InstPtr->BaseAddr, AXI_ZMOD_SCOPE_CHANNEL_2_LOW_GAIN_MULT_COEFF_REG_OFFSET,  InstPtr->CalibrationCoefficients.Channel2_LowGainMultiplicative);
-	ZmodScope_WriteReg(InstPtr->BaseAddr, AXI_ZMOD_SCOPE_CHANNEL_2_HIGH_GAIN_ADD_COEFF_REG_OFFSET,  InstPtr->CalibrationCoefficients.Channel2_HighGainAdditive);
-	ZmodScope_WriteReg(InstPtr->BaseAddr, AXI_ZMOD_SCOPE_CHANNEL_2_LOW_GAIN_ADD_COEFF_REG_OFFSET,   InstPtr->CalibrationCoefficients.Channel2_LowGainAdditive);
-
 	// Set the enable acquisition bit
 	Config = ZmodScope_ReadReg(InstPtr->BaseAddr, AXI_ZMOD_SCOPE_CONFIG_REG_OFFSET);
 	Config |= AXI_ZMOD_SCOPE_CONFIG_ENABLE_ACQUISITION_MASK;
 	ZmodScope_WriteReg(InstPtr->BaseAddr, AXI_ZMOD_SCOPE_CONFIG_REG_OFFSET, Config);
+
+	/* Send the new reg values to hardware */
+	IssueApStart(InstPtr);
+}
+
+
+void ZmodScope_SetCalibrationCoefficients(ZmodScope *InstPtr, ZmodScope_CalibrationCoefficients CalibrationCoefficients) {
+	ZmodScope_WriteReg(InstPtr->BaseAddr, AXI_ZMOD_SCOPE_CHANNEL_1_HIGH_GAIN_MULT_COEFF_REG_OFFSET, CalibrationCoefficients.Channel1_HighGainMultiplicative);
+	ZmodScope_WriteReg(InstPtr->BaseAddr, AXI_ZMOD_SCOPE_CHANNEL_1_HIGH_GAIN_ADD_COEFF_REG_OFFSET,  CalibrationCoefficients.Channel1_HighGainAdditive);
+	ZmodScope_WriteReg(InstPtr->BaseAddr, AXI_ZMOD_SCOPE_CHANNEL_1_LOW_GAIN_MULT_COEFF_REG_OFFSET,  CalibrationCoefficients.Channel1_LowGainMultiplicative);
+	ZmodScope_WriteReg(InstPtr->BaseAddr, AXI_ZMOD_SCOPE_CHANNEL_1_LOW_GAIN_ADD_COEFF_REG_OFFSET,   CalibrationCoefficients.Channel1_LowGainAdditive);
+	ZmodScope_WriteReg(InstPtr->BaseAddr, AXI_ZMOD_SCOPE_CHANNEL_2_HIGH_GAIN_MULT_COEFF_REG_OFFSET, CalibrationCoefficients.Channel2_HighGainMultiplicative);
+	ZmodScope_WriteReg(InstPtr->BaseAddr, AXI_ZMOD_SCOPE_CHANNEL_2_HIGH_GAIN_ADD_COEFF_REG_OFFSET,  CalibrationCoefficients.Channel2_HighGainAdditive);
+	ZmodScope_WriteReg(InstPtr->BaseAddr, AXI_ZMOD_SCOPE_CHANNEL_2_LOW_GAIN_MULT_COEFF_REG_OFFSET,  CalibrationCoefficients.Channel2_LowGainMultiplicative);
+	ZmodScope_WriteReg(InstPtr->BaseAddr, AXI_ZMOD_SCOPE_CHANNEL_2_LOW_GAIN_ADD_COEFF_REG_OFFSET,   CalibrationCoefficients.Channel2_LowGainAdditive);
 
 	/* Send the new reg values to hardware */
 	IssueApStart(InstPtr);
