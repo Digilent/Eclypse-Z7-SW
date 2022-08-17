@@ -3,14 +3,18 @@
 #include "dpmutil/dpmutil.h"
 #include "dpmutil/ZmodADC.h"
 
-#define ZMODFAMILY_ZMODSCOPE 0
-#define ZMODFAMILY ZMODAWG 1
-#define ZMODFAMILY_UNSUPPORTED 2
-#define ZMOD_IS_SCOPE 1
-
-
+// FIXME define should be in some platform header, not here
 #define ECLYPSE_NUM_ZMOD_PORTS 2
 
+
+/****************************************************************************/
+/**
+* Toggles the manual trigger bit high then low. This applies a pulse to a connected trigger line.
+*
+* @param	InstPtr is the device handler instance for the ManualTrigger IP.
+* @return	True if the Zmod product model indicates that it is a Zmod ADC, false otherwise
+*
+*****************************************************************************/
 BOOL ZmodIsScope (SzgDnaStrings DnaStrings) {
 	if (strcmp(DnaStrings.szProductModel, "Zmod ADC 1410-40") == 0) {
 		return fTrue;
@@ -45,7 +49,7 @@ BOOL ZmodIsScope (SzgDnaStrings DnaStrings) {
 * @param	FactoryCoefficients - returns the factory calibration coefficents for the specified Zmod Scope by argument
 * @param	FactoryCoefficients - returns the user calibration coefficents for the specified Zmod Scope by argument
 *
-* @return	if the specified port does not have a Zmod Scope populated, returns an error (1), otherwise returns
+* @return	If the specified port does not have a Zmod ADC/Scope populated, returns an error, otherwise returns
 *
 *****************************************************************************/
 XStatus ZmodScope_ReadCoefficientsFromDna(u32 ZmodPortVioGroup, ZmodScope_CalibrationCoefficients *FactoryCoefficients, ZmodScope_CalibrationCoefficients *UserCoefficients) {

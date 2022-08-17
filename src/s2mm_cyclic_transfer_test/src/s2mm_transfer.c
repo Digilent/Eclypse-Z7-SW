@@ -37,6 +37,8 @@ void S2mmInitialize (S2mmTransferHierarchy *InstPtr, const u32 DmaDeviceId) {
 * @param	InstPtr is the device handler instance to operate on.
 * @param	DmaDeviceId is the device ID for the AXI DMA IP used to perform the transfers, pulled from xparameters
 *
+* @return	none
+*
 * @note The same buffer can be reused, however if either the size or address is changed, new block descriptors need to be allocated.
 *       Approximately 16 * BufferLength * sizeof(u32) / MaxBurstLengthBytes words are allocated, with additional padding space to ensure that
 *       the block descriptor alignment requirement is satisfied.
@@ -154,6 +156,8 @@ void S2mmAttachBuffer (S2mmTransferHierarchy *InstPtr, UINTPTR Buffer, u32 Buffe
 *
 * @param	InstPtr is the device handler instance to operate on.
 *
+* @return	none
+*
 * @note Function currently does not work due to a data abort exception being thrown when freeing the BdSpace. Cause is unknown at this time.
 *
 *****************************************************************************/
@@ -177,6 +181,8 @@ void S2mmCleanup(S2mmTransferHierarchy *InstPtr) {
 * Initiates the acquisition by submitting the already-configured BdRing to hardware.
 *
 * @param	InstPtr is the device handler instance to operate on.
+*
+* @return	none
 *
 * @note This function should be called prior to enabling all upstream IP, as ready can remain high while the transfer is inactive,
 * 	    allowing data to flow into buffers, corrupting the first few samples of an acquisition.
