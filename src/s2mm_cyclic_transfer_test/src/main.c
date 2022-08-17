@@ -65,16 +65,16 @@ float RawDataToVolts (u32 data, u8 channel, u8 resolution, u8 gain) {
 }
 
 typedef struct {
-	u8 Ch1Range; // 0 = Low Gain; 1 = High Gain
-	u8 Ch2Range; // 0 = Low Gain; 1 = High Gain
+	u8 Ch1Gain; // 0 = Low Gain; 1 = High Gain
+	u8 Ch2Gain; // 0 = Low Gain; 1 = High Gain
 	u8 Ch1Coupling; // 0 = AC; 1 = DC
 	u8 Ch2Coupling; // 0 = AC; 1 = DC
 } ZmodScopeRelayConfig;
 
 void WriteZmodScopeRelayConfig(ZmodScope *InstPtr, ZmodScopeRelayConfig Config, u8 TestMode) {
 	u32 ScopeConfig = 0;
-	ScopeConfig |= Config.Ch1Range * AXI_ZMOD_SCOPE_CONFIG_CHANNEL_1_GAIN_SELECT_MASK;
-	ScopeConfig |= Config.Ch2Range * AXI_ZMOD_SCOPE_CONFIG_CHANNEL_2_GAIN_SELECT_MASK;
+	ScopeConfig |= Config.Ch1Gain * AXI_ZMOD_SCOPE_CONFIG_CHANNEL_1_GAIN_SELECT_MASK;
+	ScopeConfig |= Config.Ch2Gain * AXI_ZMOD_SCOPE_CONFIG_CHANNEL_2_GAIN_SELECT_MASK;
 	ScopeConfig |= Config.Ch1Coupling * AXI_ZMOD_SCOPE_CONFIG_CHANNEL_1_COUPLING_SELECT_MASK;
 	ScopeConfig |= Config.Ch2Coupling * AXI_ZMOD_SCOPE_CONFIG_CHANNEL_2_COUPLING_SELECT_MASK;
 	ScopeConfig |= TestMode * AXI_ZMOD_SCOPE_CONFIG_TEST_MODE_MASK;
@@ -200,8 +200,8 @@ XStatus MinMaxAcquisition (InputPipeline *InstPtr, const ZmodScopeRelayConfig Re
 
 	for (u32 i = 0; i < BufferLength; i++) {
 		u32 index = (i + BufferHeadIndex) % BufferLength;
-		float ch1_mV = 1000.0f * RawDataToVolts(RxBuffer[index], 0, ZMOD_SCOPE_RESOLUTION, Relays.Ch1Range);
-		float ch2_mV = 1000.0f * RawDataToVolts(RxBuffer[index], 1, ZMOD_SCOPE_RESOLUTION, Relays.Ch2Range);
+		float ch1_mV = 1000.0f * RawDataToVolts(RxBuffer[index], 0, ZMOD_SCOPE_RESOLUTION, Relays.Ch1Gain);
+		float ch2_mV = 1000.0f * RawDataToVolts(RxBuffer[index], 1, ZMOD_SCOPE_RESOLUTION, Relays.Ch2Gain);
 		const u16 ch1_raw = ChannelData(0, RxBuffer[index], ZMOD_SCOPE_RESOLUTION);
 		const u16 ch2_raw = ChannelData(1, RxBuffer[index], ZMOD_SCOPE_RESOLUTION);
 		if (ch1Max_mV < ch1_mV) { ch1Max_mV = ch1_mV; ch1RawMax = ch1_raw; }
@@ -213,8 +213,8 @@ XStatus MinMaxAcquisition (InputPipeline *InstPtr, const ZmodScopeRelayConfig Re
 	xil_printf("Relay Settings:\r\n");
 	xil_printf("  Ch1Coupling: %s\r\n", Relays.Ch1Coupling ? "DC" : "AC");
 	xil_printf("  Ch2Coupling: %s\r\n", Relays.Ch2Coupling ? "DC" : "AC");
-	xil_printf("  Ch1Range: %s\r\n", Relays.Ch1Range ? "High" : "Low");
-	xil_printf("  Ch2Range: %s\r\n", Relays.Ch2Range ? "High" : "Low");
+	xil_printf("  Ch1Gain: %s\r\n", Relays.Ch1Gain ? "High" : "Low");
+	xil_printf("  Ch2Gain: %s\r\n", Relays.Ch2Gain ? "High" : "Low");
 
 	xil_printf("Measurements:\r\n");
 	xil_printf("  ch1Max_mV: %d mV (0x%04x)\r\n", (int)ch1Max_mV, (int)ch1RawMax);
@@ -436,8 +436,8 @@ XStatus AcquireDataToConsole (InputPipeline *InstPtr, ZmodScopeRelayConfig Relay
 
 	for (u32 i = 0; i < BufferLength; i++) {
 		u32 index = (i + BufferHeadIndex) % BufferLength;
-		float ch1_mV = 1000.0f * RawDataToVolts(RxBuffer[index], 0, ZMOD_SCOPE_RESOLUTION, Relays.Ch1Range);
-		float ch2_mV = 1000.0f * RawDataToVolts(RxBuffer[index], 1, ZMOD_SCOPE_RESOLUTION, Relays.Ch2Range);
+		float ch1_mV = 1000.0f * RawDataToVolts(RxBuffer[index], 0, ZMOD_SCOPE_RESOLUTION, Relays.Ch1Gain);
+		float ch2_mV = 1000.0f * RawDataToVolts(RxBuffer[index], 1, ZMOD_SCOPE_RESOLUTION, Relays.Ch2Gain);
 		const u16 ch1_raw = RxBuffer[index] & 0xffff;
 		const u16 ch2_raw = (RxBuffer[index] >> 16) & 0xffff;
 		xil_printf("@%08x\t%04x\t%04x\t%d\t%d\r\n", (u32)RxBuffer + index*sizeof(u32), ch1_raw, ch2_raw, (int)ch1_mV, (int)ch2_mV);
@@ -560,8 +560,8 @@ XStatus LevelTriggerAcquisition (InputPipeline *InstPtr, ZmodScopeRelayConfig Re
 
 	for (u32 i = 0; i < BufferLength; i++) {
 		u32 index = (i + BufferHeadIndex) % BufferLength;
-		float ch1_mV = 1000.0f * RawDataToVolts(RxBuffer[index], 0, ZMOD_SCOPE_RESOLUTION, Relays.Ch1Range);
-		float ch2_mV = 1000.0f * RawDataToVolts(RxBuffer[index], 1, ZMOD_SCOPE_RESOLUTION, Relays.Ch2Range);
+		float ch1_mV = 1000.0f * RawDataToVolts(RxBuffer[index], 0, ZMOD_SCOPE_RESOLUTION, Relays.Ch1Gain);
+		float ch2_mV = 1000.0f * RawDataToVolts(RxBuffer[index], 1, ZMOD_SCOPE_RESOLUTION, Relays.Ch2Gain);
 		const u16 ch1_raw = ChannelData(0, RxBuffer[index], ZMOD_SCOPE_RESOLUTION);
 		const u16 ch2_raw = ChannelData(1, RxBuffer[index], ZMOD_SCOPE_RESOLUTION);
 		xil_printf("@%08x\t%08x\t%04x\t%04x\t%d\t%d\r\n", (u32)RxBuffer + index*sizeof(u32), RxBuffer[index], ch1_raw, ch2_raw, (int)ch1_mV, (int)ch2_mV);
@@ -592,7 +592,7 @@ int main () {
 
 	ZmodScopeRelayConfig CouplingTestRelays = {0, 0, 1, 0};
 	ZmodScopeRelayConfig GainTestRelays = {1, 0, 0, 0};
-	ZmodScopeRelayConfig LowRangeDcCoupling = {0, 0, 1, 1};
+	ZmodScopeRelayConfig HighGainDcCoupling = {1, 1, 1, 1};
 
 	LevelTriggerAcquisition (&Pipe, GainTestRelays, 0b00011, 0x0000, 0x01F0);
 //	MinMaxAcquisition(&Pipe, CouplingTestRelays);
