@@ -6,6 +6,7 @@
 #include "mm2s_transfer.h"
 #include "xuartps.h"
 #include "zmod_awg_axi_configuration.h"
+#include "awg_calibration.h"
 
 #define UART_ID XPAR_PS7_UART_0_DEVICE_ID
 
@@ -20,6 +21,8 @@
 
 #define AWG_BASEADDR XPAR_ZMODAWG_PORTB_ZMODAWGFRONTEND_0_ZMODAWGAXICONFIGURAT_0_S_AXI_CONTROL_BASEADDR
 
+#define AWG_PORT ZMODAWG_ZMOD_PORT_B_VIO_GROUP
+
 void UartInitialize (XUartPs *InstPtr, u32 DeviceId) {
 	XUartPs_Config *CfgPtr;
 	CfgPtr = XUartPs_LookupConfig(DeviceId);
@@ -32,12 +35,12 @@ u32 UartGetChar (XUartPs *InstPtr, u8 *CharPtr) {
 
 #define TO_ZMOD
 
-u16 VoltageToRaw(float Voltage, u8 RangeSelect) {
+u16 VoltageToRaw(float Voltage, u8 Scale) {
 #define ZMOD_DAC_IDEAL_LOW_RANGE_VOLTAGE 1.33
 #define ZMOD_DAC_IDEAL_HIGH_RANGE_VOLTAGE 5.32
 #define RESOLUTION 14
-	const float Range = (RangeSelect) ? ZMOD_DAC_IDEAL_HIGH_RANGE_VOLTAGE : ZMOD_DAC_IDEAL_LOW_RANGE_VOLTAGE;
-	u16 RawData = (u16)((Voltage / Range) * (1 << (RESOLUTION - 1)));
+	const float ScaleVoltage = (Scale) ? ZMOD_DAC_IDEAL_HIGH_RANGE_VOLTAGE : ZMOD_DAC_IDEAL_LOW_RANGE_VOLTAGE;
+	u16 RawData = (u16)((Voltage / ScaleVoltage) * (1 << (RESOLUTION - 1)));
 	return RawData;
 }
 
@@ -52,24 +55,26 @@ int main () {
 	AxiStreamSinkMonitor_Initialize(&Sink, SINK_BASEADDR);
 
 	ZmodAwgAxiConfiguration Awg;
-	ZmodAwg_CalibrationCoefficients Coeff = ZmodAwg_DefaultCoeff;
+//	ZmodAwg_CalibrationCoefficients Coeff = ZmodAwg_DefaultCoeff;
 
 
 #if defined(TO_ZMOD)
+	ZmodAwg_CalibrationCoefficients factory = {0}, user = {0};
+	if (ZmodAwg_ReadCoefficientsFromDna(AWG_PORT, &factory, &user) != XST_SUCCESS) {
+		xil_printf("Failed to read calibration coefficients from Zmod AWG DNA\r\n");
+	}
+
 	ZmodAwgAxiConfiguration_Initialize(&Awg, AWG_BASEADDR);
-	ZmodAwgAxiConfiguration_SetCalibration(&Awg, Coeff);
+	ZmodAwgAxiConfiguration_SetCalibration(&Awg, factory);
 
-//	while (!ZmodAwgAxiConfiguration_InitDone(&Awg));
-//	u32 Status = ZmodAwgAxiConfiguration_GetStatus(&Awg);
-//	xil_printf("ZmodAwg status: %08x\r\n", Status);
-
-	const u32 Ch1Range = 0; // 1 = High, 0 = Low
-	const u32 Ch2Range = 1; //
+	const u32 Ch1Scale = 0; // 1 = High, 0 = Low
+	const u32 Ch2Scale = 1; //
+	const u32 TestMode = 0;
 	u32 Control = 0;
 	Control |= ZMOD_AWG_AXI_CONFIGURATION_CONTROL_DACENABLE_MASK; // enable the dac when we set control
-	Control |= Ch1Range * ZMOD_AWG_AXI_CONFIGURATION_CONTROL_EXTCH1SCALE_MASK;
-	Control |= Ch2Range * ZMOD_AWG_AXI_CONFIGURATION_CONTROL_EXTCH2SCALE_MASK;
-	//	Control |= ZMOD_AWG_AXI_CONFIGURATION_CONTROL_TESTMODE_MASK;
+	Control |= Ch1Scale * ZMOD_AWG_AXI_CONFIGURATION_CONTROL_EXTCH1SCALE_MASK;
+	Control |= Ch2Scale * ZMOD_AWG_AXI_CONFIGURATION_CONTROL_EXTCH2SCALE_MASK;
+	Control |= TestMode * ZMOD_AWG_AXI_CONFIGURATION_CONTROL_TESTMODE_MASK;
 	ZmodAwgAxiConfiguration_SetControl(&Awg, Control);
 
 	u32 Status = ZmodAwgAxiConfiguration_GetStatus(&Awg);
@@ -97,10 +102,22 @@ int main () {
 	}
 
 #if defined(TO_ZMOD)
+	float voltage;
+	u16 Ch1RawData;
+	u16 Ch2RawData;
+
+	u32 count = 0;
 	for (u32 i = 0; i < BufferLength; i++) {
-		u16 RawData = (u16)((float)0xFFFC * ((float)i / (float)BufferLength));
-		TxBuffer[i] = (RawData) | (RawData << 16);
+		voltage = 1.0f * ((float)i / (float)BufferLength);
+		Ch1RawData = VoltageToRaw(voltage, Ch1Scale);
+		Ch2RawData = VoltageToRaw(voltage, Ch2Scale);
+		TxBuffer[i] = (Ch1RawData << 2) | (Ch2RawData << 18);
+		if (i % 1000 == 0) {
+			count ++;
+		}
 	}
+	xil_printf("%d ", count);
+	xil_printf("Transmit buffer filled\r\n");
 #elif defined(TO_VOID)
 	// fill test pattern
 	for (u32 i = 0; i < BufferLength; i++) {
@@ -174,6 +191,8 @@ int main () {
 	AxiStreamSinkMonitor_SetLastCount(&Sink, 0);
 	AxiStreamSinkMonitor_Start(&Sink);
 //#endif
+
+	xil_printf("Starting AWG transfer, press any key to halt it\r\n");
 
 	u32 CyclicMode = 0;
 	Mm2sStartTransfer(&Mm2s, (UINTPTR)TxBuffer, BufferLengthBytes, CyclicMode);
