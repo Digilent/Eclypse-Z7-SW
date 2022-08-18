@@ -2,6 +2,7 @@
 #define SCOPE_CALIBRATION_H_
 
 #include "zmod_scope_axi_configuration.h"
+#include "xstatus.h"
 
 #define ZMODSCOPE_ZMOD_PORT_A_VIO_GROUP 0
 #define ZMODSCOPE_ZMOD_PORT_B_VIO_GROUP 1

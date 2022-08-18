@@ -1,5 +1,4 @@
 #include "scope_calibration.h"
-#include "xstatus.h"
 #include "dpmutil/dpmutil.h"
 #include "dpmutil/ZmodADC.h"
 
@@ -9,7 +8,7 @@
 
 /****************************************************************************/
 /**
-* Toggles the manual trigger bit high then low. This applies a pulse to a connected trigger line.
+* Checks if a Zmod is actually a Zmod Scope
 *
 * @param	InstPtr is the device handler instance for the ManualTrigger IP.
 * @return	True if the Zmod product model indicates that it is a Zmod ADC, false otherwise
@@ -49,7 +48,7 @@ BOOL ZmodIsScope (SzgDnaStrings DnaStrings) {
 * @param	FactoryCoefficients - returns the factory calibration coefficents for the specified Zmod Scope by argument
 * @param	FactoryCoefficients - returns the user calibration coefficents for the specified Zmod Scope by argument
 *
-* @return	If the specified port does not have a Zmod ADC/Scope populated, returns an error, otherwise returns
+* @return	If the specified port does not have a Zmod ADC/Scope populated, returns an XST_FAILURE, otherwise returns XST_SUCCESS
 *
 *****************************************************************************/
 XStatus ZmodScope_ReadCoefficientsFromDna(u32 ZmodPortVioGroup, ZmodScope_CalibrationCoefficients *FactoryCoefficients, ZmodScope_CalibrationCoefficients *UserCoefficients) {
