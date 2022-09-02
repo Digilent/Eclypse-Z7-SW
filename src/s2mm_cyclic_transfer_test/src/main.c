@@ -21,8 +21,8 @@
 #define SCOPE_BASEADDR XPAR_ZMODSCOPE_PORTA_ZMODSCOPEFRONTEND_0_ZMODSCOPEAXICONFIGUR_0_BASEADDR
 #define LEVELTRIGGER_BASEADDR XPAR_ZMODSCOPE_PORTA_TRIGGERGENERATOR_USERREGISTERS_0_S_AXI_CONTROL_BASEADDR
 
-#define ZMOD_SCOPE_RESOLUTION 10
-#define ZMOD_SCOPE_SAMPLE_RATE 125000000
+#define ZMOD_SCOPE_RESOLUTION 14
+#define ZMOD_SCOPE_SAMPLE_RATE 100000000
 
 #define SCOPE_PORT ZMODSCOPE_ZMOD_PORT_A_VIO_GROUP
 
@@ -89,6 +89,8 @@ typedef struct InputPipeline {
 	ZmodScope Scope;
 	UserRegisters LevelTrigger;
 } InputPipeline;
+
+
 
 XStatus MinMaxAcquisition (InputPipeline *InstPtr, const ZmodScopeRelayConfig Relays) {
 	// push the same signal into both ports.
@@ -451,6 +453,8 @@ XStatus AcquireDataToConsole (InputPipeline *InstPtr, ZmodScopeRelayConfig Relay
 	return XST_SUCCESS;
 }
 
+
+//
 XStatus LevelTriggerAcquisition (InputPipeline *InstPtr, ZmodScopeRelayConfig Relays, u32 TrigEnable, u16 Ch1Level, u16 Ch2Level) {
 	// Initialize device drivers
 	S2mmTransferHierarchy *S2mmPtr = &(InstPtr->S2mm);
@@ -461,12 +465,13 @@ XStatus LevelTriggerAcquisition (InputPipeline *InstPtr, ZmodScopeRelayConfig Re
 	UserRegisters *LevelTriggerPtr = &(InstPtr->LevelTrigger);
 
 	// Define the acquisition window
-	//	const u32 SampleRateMegaSamplesPerSecond = 40;
-	//	const u32 SamplePeriodNanoseconds = 25;
+	//	const u32 SampleRateMegaSamplesPerSecond = 125;
+	//	const u32 SamplePeriodNanoseconds = 1000.0 / SampleRateMegaSamplesPerSecond;
 	// fails at bufferlength=0x100
-	const u32 BufferLength = 0x1000;//0x400000; // 0x400000 / 125 MS/s = 3.3 ms
+	const u32 BufferLength = 0x1000;//0x400000;
+	// 0x400000 / 125 MS/s = 3.3 ms
+	// 0x1000 / 100 MS/s = 40.96 us => ~10.4 kHz
 	const u32 TriggerPosition = 0;//BufferLength / 4;
-
 
 	// Get the factory calibration coefficients and apply them to the lowlevel IP
 	// FIXME mallocing of the syzygy dna name strings is currently failing
@@ -500,16 +505,13 @@ XStatus LevelTriggerAcquisition (InputPipeline *InstPtr, ZmodScopeRelayConfig Re
 	Xil_DCacheFlushRange((UINTPTR)RxBuffer, BufferLength * sizeof(u32));
 
 
-	// channel 1 breaks for zmod scope 1010 when any calibration coefficient is applied (testmode=0)
-
-
 	// Configure the trigger
 	TriggerSetPosition (TrigPtr, BufferLength, TriggerPosition);
 	TriggerSetEnable (TrigPtr, TrigEnable);
 
 	u32 Levels = ((u32)(Ch1Level) << 16) | (Ch2Level);
 //	u32 Levels = ((u32)(Ch2Level) << 16) | (Ch1Level);
-	UserRegisters_WriteReg(LevelTriggerPtr, USER_REGISTERS_OUTPUT0_REG_OFFSET, Levels);
+	UserRegisters_WriteReg(LevelTriggerPtr->BaseAddr, USER_REGISTERS_OUTPUT0_REG_OFFSET, Levels);
 
 	AxiStreamSourceMonitorSetSelect(TrafficGenPtr, SWITCH_SOURCE_SCOPE);
 
