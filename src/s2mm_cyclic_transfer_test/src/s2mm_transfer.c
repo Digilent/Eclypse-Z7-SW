@@ -216,6 +216,8 @@ void S2mmStartCyclicTransfer (S2mmTransferHierarchy *InstPtr) {
 * 		the top of the buffer address space as determined by InstPtr->BufferBaseAddr + InstPtr->BufferLength, roll over to InstPtr->BufferBaseAddr, then
 * 		iterate back up to StartOfBuffer.
 * 		For example, a 10-sample buffer where the last beat fell on index 3 would look as follows: 6789012345
+*		Scatter gather descriptors are further described here: https://docs.xilinx.com/r/en-US/pg021_axi_dma/Scatter-Gather-Descriptor
+*		S2mm status is of particular interest here: https://docs.xilinx.com/r/en-US/pg021_axi_dma/S2MM_STATUS-S2MM-Status
 *
 *****************************************************************************/
 u32 *S2mmFindStartOfBuffer (S2mmTransferHierarchy *InstPtr) {
