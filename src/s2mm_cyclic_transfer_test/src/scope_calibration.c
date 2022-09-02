@@ -53,7 +53,6 @@ BOOL ZmodIsScope (SzgDnaStrings DnaStrings) {
 *****************************************************************************/
 XStatus ZmodScope_ReadCoefficientsFromDna(u32 ZmodPortVioGroup, ZmodScope_CalibrationCoefficients *FactoryCoefficients, ZmodScope_CalibrationCoefficients *UserCoefficients) {
 	dpmutilPortInfo_t PortInfo[ECLYPSE_NUM_ZMOD_PORTS] = {0};
-	XStatus Status;
 	u32 iPort;
 	SzgDnaHeader DnaHeader;
 	SzgDnaStrings DnaStrings = {0};
@@ -93,7 +92,9 @@ XStatus ZmodScope_ReadCoefficientsFromDna(u32 ZmodPortVioGroup, ZmodScope_Calibr
 	}
 
 	// Read the calibration coefficients
-	FGetZmodADCCal(_unused_, PortInfo[iPort].i2cAddr, &FactoryCal, &UserCal);
+	if (!FGetZmodADCCal(_unused_, PortInfo[iPort].i2cAddr, &FactoryCal, &UserCal)) {
+		return XST_FAILURE;
+	}
 
 	ZMOD_ADC_CAL_S18 Coeffs;
 
