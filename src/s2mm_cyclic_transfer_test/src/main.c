@@ -520,6 +520,7 @@ XStatus LevelTriggerAcquisition (InputPipeline *InstPtr, ZmodScopeRelayConfig Re
 	u32 Levels = ((u32)(Ch1Level) << 16) | (Ch2Level);
 //	u32 Levels = ((u32)(Ch2Level) << 16) | (Ch1Level);
 	UserRegisters_WriteReg(LevelTriggerPtr->BaseAddr, USER_REGISTERS_OUTPUT0_REG_OFFSET, Levels);
+	UserRegisters_IssueApStart(LevelTriggerPtr);
 
 	AxiStreamSourceMonitorSetSelect(TrafficGenPtr, SWITCH_SOURCE_SCOPE);
 
