@@ -64,6 +64,14 @@ float RawDataToVolts (u32 data, u8 channel, u8 resolution, u8 gain) {
 	return GetVoltFromSignedRaw(SignedData, gain, resolution);
 }
 
+u16 VoltsToTriggerLevel (float data, u8 resolution, u8 gain) {
+	#define IDEAL_RANGE_ADC_LOW 25.0f
+	#define IDEAL_RANGE_ADC_HIGH 1.0f
+	float vMax = gain ? IDEAL_RANGE_ADC_HIGH : IDEAL_RANGE_ADC_LOW;
+	return (u16) (data * (float)(1 << (resolution - 1)) / vMax) << (16 - resolution);
+}
+
+
 typedef struct {
 	u8 Ch1Gain; // 0 = Low Gain; 1 = High Gain
 	u8 Ch2Gain; // 0 = Low Gain; 1 = High Gain
@@ -596,8 +604,15 @@ int main () {
 	ZmodScopeRelayConfig GainTestRelays = {1, 0, 0, 0};
 	ZmodScopeRelayConfig HighGainDcCoupling = {1, 1, 1, 1};
 
-	LevelTriggerAcquisition (&Pipe, GainTestRelays, 0b00011, 0x0000, 0x01F0);
+	LevelTriggerAcquisition (
+			&Pipe,
+			GainTestRelays,
+			0b00010, // enable only channel 1 rising level trigger
+			VoltsToTriggerLevel(0.5f, 14, GainTestRelays.Ch1Gain),
+			VoltsToTriggerLevel(0.5f, 14, GainTestRelays.Ch2Gain)
+			);
 //	MinMaxAcquisition(&Pipe, CouplingTestRelays);
 //	MinMaxAcquisition(&Pipe, GainTestRelays);
+
 
 }
