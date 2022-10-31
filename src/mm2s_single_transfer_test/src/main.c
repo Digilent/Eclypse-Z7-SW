@@ -111,7 +111,7 @@ int main () {
 		voltage = 1.0f * ((float)i / (float)BufferLength);
 		Ch1RawData = VoltageToRaw(voltage, Ch1Scale);
 		Ch2RawData = VoltageToRaw(voltage, Ch2Scale);
-		TxBuffer[i] = (Ch1RawData << 2) | (Ch2RawData << 18);
+		TxBuffer[i] = (Ch1RawData << 18) | (Ch2RawData << 2);
 		if (i % 1000 == 0) {
 			count ++;
 		}
