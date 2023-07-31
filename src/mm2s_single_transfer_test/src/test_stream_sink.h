@@ -1,5 +1,5 @@
-#ifndef TRAFFIC_GENERATOR_H_   /* prevent circular inclusions */
-#define TRAFFIC_GENERATOR_H_
+#ifndef TEST_STREAM_SINK_H_   /* prevent circular inclusions */
+#define TEST_STREAM_SINK_H_
 
 #include "AxiStreamSinkMonitor.h"
 
