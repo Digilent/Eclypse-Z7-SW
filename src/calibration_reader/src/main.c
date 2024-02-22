@@ -1,76 +1,6 @@
 #include "./dpmutil/dpmutil.h"
 #include "stdio.h"
 
-#define ZMODFAMILY_ZMODSCOPE 0
-#define ZMODFAMILY_ZMODAWG 1
-#define ZMODFAMILY_ZMODDIGITIZER 2
-#define ZMODFAMILY_UNSUPPORTED -1
-
-typedef struct ZmodInfo {
-	u8 resolution;
-	float maxSampleRateMHz;
-	u32 family; // 0 for adc, 1 for dac
-} ZmodInfo;
-
-ZmodInfo LookupZmodInfo (SzgDnaStrings DnaStrings) {
-	ZmodInfo info;
-
-	if (strcmp(DnaStrings.szProductModel, "Zmod ADC 1410-40") == 0) {
-		info.family = ZMODFAMILY_ZMODSCOPE;
-		info.maxSampleRateMHz = 40.0f;
-		info.resolution = 14;
-	}
-	else if (strcmp(DnaStrings.szProductModel, "Zmod ADC 1410-105") == 0) {
-		info.family = ZMODFAMILY_ZMODSCOPE;
-		info.maxSampleRateMHz = 105.0f;
-		info.resolution = 14;
-	}
-	else if (strcmp(DnaStrings.szProductModel, "Zmod ADC 1410-125") == 0) {
-		info.family = ZMODFAMILY_ZMODSCOPE;
-		info.maxSampleRateMHz = 125.0f;
-		info.resolution = 14;
-	}
-	else if (strcmp(DnaStrings.szProductModel, "Zmod ADC 1210-40") == 0) {
-		info.family = ZMODFAMILY_ZMODSCOPE;
-		info.maxSampleRateMHz = 40.0f;
-		info.resolution = 12;
-	}
-	else if (strcmp(DnaStrings.szProductModel, "Zmod ADC 1210-125") == 0) {
-		info.family = ZMODFAMILY_ZMODSCOPE;
-		info.maxSampleRateMHz = 125.0f;
-		info.resolution = 12;
-	}
-	else if (strcmp(DnaStrings.szProductModel, "Zmod ADC 1010-40") == 0) {
-		info.family = ZMODFAMILY_ZMODSCOPE;
-		info.maxSampleRateMHz = 40.0f;
-		info.resolution = 10;
-	}
-	else if (strcmp(DnaStrings.szProductModel, "Zmod ADC 1010-125") == 0) {
-		info.family = ZMODFAMILY_ZMODSCOPE;
-		info.maxSampleRateMHz = 125.0f;
-		info.resolution = 10;
-	}
-	else if (strcmp(DnaStrings.szProductModel, "Zmod DAC 1411-125") == 0) {
-		info.family = ZMODFAMILY_ZMODAWG;
-		info.maxSampleRateMHz = 125.0f;
-		info.resolution = 14;
-	}
-	else if (strcmp(DnaStrings.szProductModel, "Zmod Digitizer 1430-125") == 0) {
-		info.family = ZMODFAMILY_ZMODDIGITIZER;
-		info.maxSampleRateMHz = 125.0f;
-		info.resolution = 14;
-	}
-	else if (strcmp(DnaStrings.szProductModel, "Zmod Digitizer 1450-105") == 0) {
-		info.family = ZMODFAMILY_ZMODDIGITIZER;
-		info.maxSampleRateMHz = 125.0f;
-		info.resolution = 14;
-	}
-	else {
-		info.family = ZMODFAMILY_UNSUPPORTED;
-	}
-	return info;
-}
-
 #define ZMOD_PORT_A_GROUPVIO 0
 #define ZMOD_PORT_B_GROUPVIO 1
 
@@ -109,31 +39,40 @@ int main () {
 		SyzygyReadDNAHeader(fdI2cDev, PortInfo[iPort].i2cAddr, &DnaHeader, FALSE);
 		SyzygyReadDNAStrings(fdI2cDev, PortInfo[iPort].i2cAddr, &DnaHeader, &DnaStrings);
 
-		// Figure out which Zmod is being used based on the name loaded in DNA
-		switch (LookupZmodInfo(DnaStrings).family) {
-		case ZMODFAMILY_ZMODSCOPE:
+		// Read the product id
+		DWORD Pdid;
+		if (!FZmodReadPdid(fdI2cDev, PortInfo[iPort].i2cAddr, &Pdid)) {
+			continue;
+		}
+
+		ZMOD_FAMILY Family;
+		if (!FGetZmodFamily(Pdid, &Family)) {
+			printf("========= Unsupported Zmod (%s) populated on %s =========\r\n", DnaStrings.szProductName, PortName);
+			continue;
+		}
+
+		switch (Family) {
+		case ZMOD_FAMILY_ADC:
 			printf("========= %s : %s Calibration Coefficients =========\r\n", PortName, DnaStrings.szProductName);
 			FDisplayZmodADCCal(fdI2cDev, PortInfo[iPort].i2cAddr);
 			ZMOD_ADC_CAL ADCFactoryCalibration, ADCUserCalibration;
 			FGetZmodADCCal(fdI2cDev, PortInfo[iPort].i2cAddr, &ADCFactoryCalibration, &ADCUserCalibration);
 			printf("\r\n");
 			break;
-		case ZMODFAMILY_ZMODAWG:
+		case ZMOD_FAMILY_DAC:
 			printf("========= %s : %s Calibration Coefficients =========\r\n", PortName, DnaStrings.szProductName);
 			FDisplayZmodDACCal(fdI2cDev, PortInfo[iPort].i2cAddr);
 			ZMOD_DAC_CAL DACFactoryCalibration, DACUserCalibration;
 			FGetZmodDACCal(fdI2cDev, PortInfo[iPort].i2cAddr, &DACFactoryCalibration, &DACUserCalibration);
 			printf("\r\n");
 			break;
-		case ZMODFAMILY_ZMODDIGITIZER:
+		case ZMOD_FAMILY_DIGITIZER:
 			printf("========= %s : %s Calibration Coefficients =========\r\n", PortName, DnaStrings.szProductName);
 			FDisplayZmodDigitizerCal(fdI2cDev, PortInfo[iPort].i2cAddr);
 			ZMOD_DIGITIZER_CAL DigitizerFactoryCalibration, DigitizerUserCalibration;
 			FGetZmodDigitizerCal(fdI2cDev, PortInfo[iPort].i2cAddr, &DigitizerFactoryCalibration, &DigitizerUserCalibration);
 			printf("\r\n");
 			break;
-		default:
-			printf("========= Unsupported Zmod (%s) populated on %s =========\r\n", DnaStrings.szProductName, PortName);
 		}
 
 		// Free memory allocated to hold DNA strings like product name
