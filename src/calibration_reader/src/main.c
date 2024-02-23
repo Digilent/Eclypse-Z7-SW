@@ -73,6 +73,8 @@ int main () {
 			FGetZmodDigitizerCal(fdI2cDev, PortInfo[iPort].i2cAddr, &DigitizerFactoryCalibration, &DigitizerUserCalibration);
 			printf("\r\n");
 			break;
+		case ZMOD_FAMILY_UNSUPPORTED:
+			printf("========= Unsupported Zmod (%s) populated on %s =========\r\n", DnaStrings.szProductName, PortName);
 		}
 
 		// Free memory allocated to hold DNA strings like product name
