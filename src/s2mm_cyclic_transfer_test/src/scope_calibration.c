@@ -5,41 +5,6 @@
 // FIXME define should be in some platform header, not here
 #define ECLYPSE_NUM_ZMOD_PORTS 2
 
-
-/****************************************************************************/
-/**
-* Checks if a Zmod is actually a Zmod Scope
-*
-* @param	InstPtr is the device handler instance for the ManualTrigger IP.
-* @return	True if the Zmod product model indicates that it is a Zmod ADC, false otherwise
-*
-*****************************************************************************/
-BOOL ZmodIsScope (SzgDnaStrings DnaStrings) {
-	if (strcmp(DnaStrings.szProductModel, "Zmod ADC 1410-40") == 0) {
-		return fTrue;
-	}
-	if (strcmp(DnaStrings.szProductModel, "Zmod ADC 1410-105") == 0) {
-		return fTrue;
-	}
-	if (strcmp(DnaStrings.szProductModel, "Zmod ADC 1410-125") == 0) {
-		return fTrue;
-	}
-	if (strcmp(DnaStrings.szProductModel, "Zmod ADC 1210-40") == 0) {
-		return fTrue;
-	}
-	if (strcmp(DnaStrings.szProductModel, "Zmod ADC 1210-125") == 0) {
-		return fTrue;
-	}
-	if (strcmp(DnaStrings.szProductModel, "Zmod ADC 1010-40") == 0) {
-		return fTrue;
-	}
-	else if (strcmp(DnaStrings.szProductModel, "Zmod ADC 1010-125") == 0) {
-		return fTrue;
-	}
-
-	return fFalse;
-}
-
 /****************************************************************************/
 /**
 * Reads calibration coefficients from the Zmod Scope SYZYGY DNA via I2C
@@ -54,8 +19,7 @@ BOOL ZmodIsScope (SzgDnaStrings DnaStrings) {
 XStatus ZmodScope_ReadCoefficientsFromDna(u32 ZmodPortVioGroup, ZmodScope_CalibrationCoefficients *FactoryCoefficients, ZmodScope_CalibrationCoefficients *UserCoefficients) {
 	dpmutilPortInfo_t PortInfo[ECLYPSE_NUM_ZMOD_PORTS] = {0};
 	u32 iPort;
-	SzgDnaHeader DnaHeader;
-	SzgDnaStrings DnaStrings = {0};
+	DWORD Pdid;
 	ZMOD_ADC_CAL FactoryCal = {0};
 	ZMOD_ADC_CAL UserCal = {0};
 
@@ -83,11 +47,10 @@ XStatus ZmodScope_ReadCoefficientsFromDna(u32 ZmodPortVioGroup, ZmodScope_Calibr
 		return XST_FAILURE;
 	}
 
-	// Read the standard DNA information
-	SyzygyReadDNAHeader(_unused_, PortInfo[iPort].i2cAddr, &DnaHeader, FALSE);
-	SyzygyReadDNAStrings(_unused_, PortInfo[iPort].i2cAddr, &DnaHeader, &DnaStrings);
+	// Read the Pdid and use it to determine whether the Zmod is a Zmod Scope
+	FZmodReadPdid(_unused_, PortInfo[iPort].i2cAddr, &Pdid);
 
-	if (!ZmodIsScope(DnaStrings)) {
+	if (!FZmodIsADC(Pdid)) {
 		return XST_FAILURE;
 	}
 

@@ -485,7 +485,7 @@ XStatus LevelTriggerAcquisition (InputPipeline *InstPtr, ZmodScopeRelayConfig Re
 	// FIXME mallocing of the syzygy dna name strings is currently failing
 	ZmodScope_CalibrationCoefficients factory, _unused_;
 	if (ZmodScope_ReadCoefficientsFromDna(SCOPE_PORT, &factory, &_unused_) != XST_SUCCESS) {
-		xil_printf("ERROR: failed to read Zmod Scope calibration coefficients");
+		xil_printf("ERROR: failed to read Zmod Scope calibration coefficients\r\n");
 	}
 	ZmodScope_SetCalibrationCoefficients(ScopePtr, factory);
 
