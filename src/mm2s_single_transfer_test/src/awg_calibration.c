@@ -6,24 +6,6 @@
 // FIXME define should be in some platform header, not here
 #define ECLYPSE_NUM_ZMOD_PORTS 2
 
-BOOL ZmodIsAwg (SzgDnaStrings DnaStrings);
-
-/****************************************************************************/
-/**
-* Checks if the Zmod is actually a Zmod AWG
-*
-* @param	InstPtr is the device handler instance for the ManualTrigger IP.
-* @return	True if the Zmod product model indicates that it is a Zmod DAC, false otherwise
-*
-*****************************************************************************/
-BOOL ZmodIsAwg (SzgDnaStrings DnaStrings) {
-	if (strcmp(DnaStrings.szProductModel, "Zmod DAC 1411-125") == 0) {
-		return fTrue;
-	}
-
-	return fFalse;
-}
-
 /****************************************************************************/
 /**
 * Reads calibration coefficients from the Zmod AWG SYZYGY DNA via I2C
@@ -39,8 +21,7 @@ XStatus ZmodAwg_ReadCoefficientsFromDna(u32 ZmodPortVioGroup, ZmodAwg_Calibratio
 	dpmutilPortInfo_t PortInfo[ECLYPSE_NUM_ZMOD_PORTS] = {0};
 	XStatus Status;
 	u32 iPort;
-	SzgDnaHeader DnaHeader;
-	SzgDnaStrings DnaStrings = {0};
+	DWORD Pdid;
 	ZMOD_DAC_CAL FactoryCal = {0};
 	ZMOD_DAC_CAL UserCal = {0};
 
@@ -68,11 +49,10 @@ XStatus ZmodAwg_ReadCoefficientsFromDna(u32 ZmodPortVioGroup, ZmodAwg_Calibratio
 		return XST_FAILURE;
 	}
 
-	// Read the standard DNA information
-	SyzygyReadDNAHeader(_unused_, PortInfo[iPort].i2cAddr, &DnaHeader, FALSE);
-	SyzygyReadDNAStrings(_unused_, PortInfo[iPort].i2cAddr, &DnaHeader, &DnaStrings);
+	// Read the Pdid and use it to determine whether the Zmod is a Zmod AWG
+	FZmodReadPdid(_unused_, PortInfo[iPort].i2cAddr, &Pdid);
 
-	if (!ZmodIsAwg(DnaStrings)) {
+	if (!FZmodIsDAC(Pdid)) {
 		return XST_FAILURE;
 	}
 
