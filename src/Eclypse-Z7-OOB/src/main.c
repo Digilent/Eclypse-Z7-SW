@@ -18,30 +18,17 @@
 #define PWM_LED1_GREEN_INDEX 4
 #define PWM_LED1_RED_INDEX   5
 
-void PWM_SetDuties(u32 PwmBaseAddr, u32 intensity, u32 colors) {
-	for (u32 index=0; index<6; index++) {
-		if (((colors >> index) & 0x1) == 0x1) {
-			if (intensity >= 128) {
-				PWM_Set_Duty(PwmBaseAddr, 255 - intensity, index);
-			} else {
-				PWM_Set_Duty(PwmBaseAddr, intensity, index);
-			}
-		} else {
-			PWM_Set_Duty(PwmBaseAddr, 0, index);
-		}
-	}
-}
+void PWM_SetDuties(u32 PwmBaseAddr, u32 intensity, u32 colors);
 
-int main (void) {
-	XGpio buttons;
-	XGpio_Config *buttons_config_ptr;
-	const u32 PwmBaseAddr = XPAR_PWM_0_PWM_AXI_BASEADDR;
+int main() {
+	XGpio buttons = {0, 0, 0, 0};
+	XGpio_Config* buttons_config_ptr = NULL;
+	const u32 PwmBaseAddr = XPAR_PWM_0_BASEADDR;
 	u32 button_data, last_button_data = 0;
-
-	buttons_config_ptr = XGpio_LookupConfig(XPAR_AXI_GPIO_0_DEVICE_ID);
+    u32 intensity = 0, colors = 0b001001, us_counter = 0, mask = 0;
+	buttons_config_ptr = XGpio_LookupConfig(XPAR_AXI_GPIO_0_BASEADDR);
+    
 	XGpio_CfgInitialize(&buttons, buttons_config_ptr, buttons_config_ptr->BaseAddress);
-
-	u32 intensity = 0, colors = 0b001001, us_counter = 0, mask;
 	PWM_Set_Period(PwmBaseAddr, 256);
 	PWM_SetDuties(PwmBaseAddr, intensity, colors);
 	PWM_Enable(PwmBaseAddr);
@@ -55,17 +42,17 @@ int main (void) {
 			xil_printf("Button 2 pressed!\r\n");
 		}
 		last_button_data = button_data;
-
 		if (us_counter >= 3406) {
 			us_counter = 0;
 			if (intensity >= 255) {
 				intensity = 0;
 				colors = ((colors >> 5) | (colors << 1)) & 0b111111;
-//				if (colors >= 0b111111) {
-//					colors = 0;
-//				} else {
-//					colors++;
-//				}
+                /*
+				if (colors >= 0b111111) {
+					colors = 0;
+				} else {
+					colors++;
+				}*/
 			} else {
 				intensity++;
 			}
@@ -80,8 +67,22 @@ int main (void) {
 		} else {
 			us_counter++;
 		}
-
-
 		usleep(1);
+	}
+    
+    return 0;
+}
+
+void PWM_SetDuties(u32 PwmBaseAddr, u32 intensity, u32 colors) {
+	for (u32 index = 0; index < 6; index++) {
+		if (((colors >> index) & 0x1) == 0x1) {
+			if (intensity >= 128) {
+				PWM_Set_Duty(PwmBaseAddr, 255 - intensity, index);
+			} else {
+				PWM_Set_Duty(PwmBaseAddr, intensity, index);
+			}
+		} else {
+			PWM_Set_Duty(PwmBaseAddr, 0, index);
+		}
 	}
 }

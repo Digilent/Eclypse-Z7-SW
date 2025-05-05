@@ -1,3 +1,4 @@
+
 # Eclypse Z7 Out-of-Box Demo 
 
 ## Description
@@ -30,3 +31,16 @@ For more information on the Eclypse Z7, visit its [Resource Center](https://refe
 For more information on how our git and project flow is set up, please refer to the [Eclypse Z7 Git Repositories](https://reference.digilentinc.com/reference/programmable-logic/eclypse-z7/git) documentation.
 
 For technical support or questions, please post on the [Digilent Forum](forum.digilentinc.com).
+
+## New Vitis workflow
+
+This functionality can be reproduced from Vitis IDE by launching the terminal from
+Terminal -> New Terminal which uses the default command line executable from the OS,
+or simply manually invoke the native terminal. If this is the choosen method, then it will be necessary to give absolute path to the `checkout.py`
+or `checkin.py` file, not relative, or to change current working directory to the wanted sw submodule branch.
+
+> `vitis -s <path-to-scripts-repo>checkout.py`
+
+or
+
+> `vitis -s <path-to-scripts-repo>checkin.py`
