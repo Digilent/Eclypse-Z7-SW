@@ -1,0 +1,56 @@
+#ifndef USER_REGISTERS_HW_H_
+#define USER_REGISTERS_HW_H_
+
+#include "xil_types.h"
+#include "xil_io.h"
+
+/* Register offsets */
+#define USER_REGISTERS_AP_CTRL_REG_OFFSET 0x0
+#define USER_REGISTERS_GIE_REG_OFFSET 0x4
+#define USER_REGISTERS_IP_INTR_EN_REG_OFFSET 0x8
+#define USER_REGISTERS_IP_INTR_STS_REG_OFFSET 0xc
+#define USER_REGISTERS_INPUT0_REG_OFFSET 0x10
+#define USER_REGISTERS_INPUT1_REG_OFFSET 0x18
+#define USER_REGISTERS_INPUT2_REG_OFFSET 0x20
+#define USER_REGISTERS_INPUT3_REG_OFFSET 0x28
+#define USER_REGISTERS_OUTPUT0_REG_OFFSET 0x30
+#define USER_REGISTERS_OUTPUT1_REG_OFFSET 0x38
+#define USER_REGISTERS_OUTPUT2_REG_OFFSET 0x40
+#define USER_REGISTERS_OUTPUT3_REG_OFFSET 0x48
+
+/* Control Register bitfields */
+#define USER_REGISTERS_AP_CTRL_START_MASK 0x01
+#define USER_REGISTERS_AP_CTRL_DONE_MASK 0x02
+#define USER_REGISTERS_AP_CTRL_IDLE_MASK 0x04
+#define USER_REGISTERS_AP_CTRL_READY_MASK 0x08
+#define USER_REGISTERS_AP_CTRL_AUTO_RESTART_MASK 0x80
+
+/* Global interrupt enable register bitfields */
+#define USER_REGISTERS_GIE_ENABLE_MASK 0x01
+
+/* IP interrupt enable register bitfields */
+#define USER_REGISTERS_IP_INTR_EN_AP_DONE_MASK 0x1
+#define USER_REGISTERS_IP_INTR_EN_AP_READY_MASK 0x2
+#define USER_REGISTERS_IP_INTR_EN_ALL_MASK 0x3
+
+/* IP interrupt status register bitfields */
+#define USER_REGISTERS_IP_INTR_STS_AP_DONE_MASK 0x1
+#define USER_REGISTERS_IP_INTR_STS_AP_READY_MASK 0x2
+/* INPUT0 register bitfields */
+#define USER_REGISTERS_INPUT0_INPUT0_MASK 0xffffffff
+/* INPUT1 register bitfields */
+#define USER_REGISTERS_INPUT1_INPUT1_MASK 0xffffffff
+/* INPUT2 register bitfields */
+#define USER_REGISTERS_INPUT2_INPUT2_MASK 0xffffffff
+/* INPUT3 register bitfields */
+#define USER_REGISTERS_INPUT3_INPUT3_MASK 0xffffffff
+/* OUTPUT0 register bitfields */
+#define USER_REGISTERS_OUTPUT0_OUTPUT0_MASK 0xffffffff
+/* OUTPUT1 register bitfields */
+#define USER_REGISTERS_OUTPUT1_OUTPUT1_MASK 0xffffffff
+/* OUTPUT2 register bitfields */
+#define USER_REGISTERS_OUTPUT2_OUTPUT2_MASK 0xffffffff
+/* OUTPUT3 register bitfields */
+#define USER_REGISTERS_OUTPUT3_OUTPUT3_MASK 0xffffffff
+
+#endif /* end of protection macro */

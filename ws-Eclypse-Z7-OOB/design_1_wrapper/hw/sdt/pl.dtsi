@@ -1,0 +1,51 @@
+/ {
+	amba_pl: amba_pl {
+		ranges;
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		PWM_0: PWM@43c00000 {
+			compatible = "xlnx,PWM-2.0";
+			xlnx,rable = <0>;
+			xlnx,ip-name = "PWM";
+			xlnx,pwm-axi-data-width = <32>;
+			reg = <0x43c00000 0x10000>;
+			clocks = <&clkc 15>;
+			xlnx,edk-iptype = "PERIPHERAL";
+			xlnx,polarity = "1";
+			status = "okay";
+			clock-names = "pwm_axi_aclk";
+			xlnx,pwm-axi-addr-width = <7>;
+			xlnx,name = "PWM_0";
+			xlnx,num-pwm = <6>;
+		};
+		axi_gpio_0: axi_gpio@41200000 {
+			xlnx,gpio-board-interface = "btn_2bits";
+			compatible = "xlnx,axi-gpio-2.0" , "xlnx,xps-gpio-1.00.a";
+			xlnx,all-outputs = <0>;
+			#gpio-cells = <2>;
+			xlnx,gpio-width = <2>;
+			xlnx,rable = <0>;
+			xlnx,dout-default = <0x00000000>;
+			xlnx,is-dual = <0>;
+			xlnx,ip-name = "axi_gpio";
+			xlnx,tri-default-2 = <0xFFFFFFFF>;
+			reg = <0x41200000 0x10000>;
+			xlnx,all-inputs-2 = <0>;
+			clocks = <&clkc 15>;
+			xlnx,all-outputs-2 = <0>;
+			gpio-controller;
+			xlnx,interrupt-present = <0>;
+			xlnx,gpio2-board-interface = "Custom";
+			xlnx,edk-iptype = "PERIPHERAL";
+			xlnx,dout-default-2 = <0x00000000>;
+			xlnx,gpio2-width = <32>;
+			status = "okay";
+			clock-names = "s_axi_aclk";
+			xlnx,use-board-flow;
+			xlnx,tri-default = <0xFFFFFFFF>;
+			xlnx,name = "axi_gpio_0";
+			xlnx,all-inputs = <1>;
+		};
+	};
+};

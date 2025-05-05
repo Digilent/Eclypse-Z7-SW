@@ -1,0 +1,54 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "tcf-debug",
+      "request": "launch",
+      "name": "s2mm_cyclic_transfer_test_app_hw_1",
+      "debugType": "baremetal-zynq",
+      "attachToRunningTargetOptions": {
+        "targetSetupMode": "standalone",
+        "executeScript": true,
+        "scriptPath": ""
+      },
+      "autoAttachProcessChildren": false,
+      "target": {
+        "targetConnectionId": "Local",
+        "peersIniPath": "../../../.wsdata/.peers.ini",
+        "context": "zynq"
+      },
+      "targetSetup": {
+        "resetSystem": true,
+        "programDevice": true,
+        "resetAPU": false,
+        "bitstreamFile": "${workspaceFolder}\\s2mm_cyclic_transfer_test\\_ide\\bitstream\\design_1_wrapper.bit",
+        "zynqInitialization": {
+          "isFsbl": false,
+          "usingFSBL": {
+            "initWithFSBL": true,
+            "fsblFile": "${workspaceFolder}\\design_1_wrapper\\export\\design_1_wrapper\\sw\\boot\\fsbl.elf",
+            "fsblExitSymbol": "FsblHandoffJtagExit"
+          },
+          "usingPs7Init": {
+            "runPs7Init": true,
+            "runPs7PostInit": true,
+            "ps7InitTclFile": "${workspaceFolder}\\s2mm_cyclic_transfer_test\\_ide\\psinit\\AxiStreamSinkMonitor.tcl"
+          }
+        },
+        "downloadElf": [
+          {
+            "core": "ps7_cortexa9_0",
+            "resetProcessor": true,
+            "elfFile": "${workspaceFolder}\\s2mm_cyclic_transfer_test\\build\\s2mm_cyclic_transfer_test.elf",
+            "stopAtEntry": false
+          }
+        ],
+        "crossTriggerBreakpoints": {
+          "isSelected": false,
+          "breakpoints": []
+        }
+      },
+      "internalConsoleOptions": "openOnSessionStart"
+    }
+  ]
+}

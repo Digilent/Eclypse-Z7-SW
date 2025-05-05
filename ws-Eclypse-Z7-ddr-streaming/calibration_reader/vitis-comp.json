@@ -1,0 +1,15 @@
+{
+  "name": "calibration_reader",
+  "type": "HOST",
+  "platform": "D:\\PrjMig-Vitis_2024.1\\tests\\eclypse-z7\\sw\\ws1\\design_1_wrapper\\export\\design_1_wrapper\\design_1_wrapper.xpfm",
+  "domain": "standalone_ps7_cortexa9_0",
+  "cpuInstance": "ps7_cortexa9_0",
+  "cpuType": "cortex-a9",
+  "os": "standalone",
+  "configuration": {
+    "componentType": "HOST",
+    "hostToolchainConfigurations": []
+  },
+  "domainRealName": "standalone_ps7_cortexa9_0",
+  "applicationFlow": "EMBEDDED"
+}

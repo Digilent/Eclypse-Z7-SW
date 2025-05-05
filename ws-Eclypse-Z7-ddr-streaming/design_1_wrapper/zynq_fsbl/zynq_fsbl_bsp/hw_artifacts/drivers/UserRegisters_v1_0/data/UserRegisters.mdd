@@ -1,0 +1,9 @@
+OPTION psf_version = 2.1;
+
+BEGIN DRIVER UserRegisters
+	OPTION supported_peripherals = (UserRegisters);
+	OPTION copyfiles = all;
+	OPTION VERSION = 1.0;
+	OPTION NAME = UserRegisters;
+END DRIVER
+

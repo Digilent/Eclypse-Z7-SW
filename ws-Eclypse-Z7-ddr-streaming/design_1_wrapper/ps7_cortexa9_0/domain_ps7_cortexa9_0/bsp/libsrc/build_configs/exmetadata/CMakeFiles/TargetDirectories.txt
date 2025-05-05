@@ -1,0 +1,17 @@
+D:/PrjMig-Vitis_2024.1/tests/eclypse-z7/sw/ws/design_1_wrapper/ps7_cortexa9_0/domain_ps7_cortexa9_0/bsp/libsrc/build_configs/exmetadata/CMakeFiles/axidma_example.dir
+D:/PrjMig-Vitis_2024.1/tests/eclypse-z7/sw/ws/design_1_wrapper/ps7_cortexa9_0/domain_ps7_cortexa9_0/bsp/libsrc/build_configs/exmetadata/CMakeFiles/coresightps_dcc_example.dir
+D:/PrjMig-Vitis_2024.1/tests/eclypse-z7/sw/ws/design_1_wrapper/ps7_cortexa9_0/domain_ps7_cortexa9_0/bsp/libsrc/build_configs/exmetadata/CMakeFiles/devcfg_example.dir
+D:/PrjMig-Vitis_2024.1/tests/eclypse-z7/sw/ws/design_1_wrapper/ps7_cortexa9_0/domain_ps7_cortexa9_0/bsp/libsrc/build_configs/exmetadata/CMakeFiles/dmaps_example.dir
+D:/PrjMig-Vitis_2024.1/tests/eclypse-z7/sw/ws/design_1_wrapper/ps7_cortexa9_0/domain_ps7_cortexa9_0/bsp/libsrc/build_configs/exmetadata/CMakeFiles/emacps_example.dir
+D:/PrjMig-Vitis_2024.1/tests/eclypse-z7/sw/ws/design_1_wrapper/ps7_cortexa9_0/domain_ps7_cortexa9_0/bsp/libsrc/build_configs/exmetadata/CMakeFiles/gpiops_example.dir
+D:/PrjMig-Vitis_2024.1/tests/eclypse-z7/sw/ws/design_1_wrapper/ps7_cortexa9_0/domain_ps7_cortexa9_0/bsp/libsrc/build_configs/exmetadata/CMakeFiles/iicps_example.dir
+D:/PrjMig-Vitis_2024.1/tests/eclypse-z7/sw/ws/design_1_wrapper/ps7_cortexa9_0/domain_ps7_cortexa9_0/bsp/libsrc/build_configs/exmetadata/CMakeFiles/scugic_example.dir
+D:/PrjMig-Vitis_2024.1/tests/eclypse-z7/sw/ws/design_1_wrapper/ps7_cortexa9_0/domain_ps7_cortexa9_0/bsp/libsrc/build_configs/exmetadata/CMakeFiles/qspips_example.dir
+D:/PrjMig-Vitis_2024.1/tests/eclypse-z7/sw/ws/design_1_wrapper/ps7_cortexa9_0/domain_ps7_cortexa9_0/bsp/libsrc/build_configs/exmetadata/CMakeFiles/scutimer_example.dir
+D:/PrjMig-Vitis_2024.1/tests/eclypse-z7/sw/ws/design_1_wrapper/ps7_cortexa9_0/domain_ps7_cortexa9_0/bsp/libsrc/build_configs/exmetadata/CMakeFiles/scuwdt_example.dir
+D:/PrjMig-Vitis_2024.1/tests/eclypse-z7/sw/ws/design_1_wrapper/ps7_cortexa9_0/domain_ps7_cortexa9_0/bsp/libsrc/build_configs/exmetadata/CMakeFiles/sdps_example.dir
+D:/PrjMig-Vitis_2024.1/tests/eclypse-z7/sw/ws/design_1_wrapper/ps7_cortexa9_0/domain_ps7_cortexa9_0/bsp/libsrc/build_configs/exmetadata/CMakeFiles/uartps_example.dir
+D:/PrjMig-Vitis_2024.1/tests/eclypse-z7/sw/ws/design_1_wrapper/ps7_cortexa9_0/domain_ps7_cortexa9_0/bsp/libsrc/build_configs/exmetadata/CMakeFiles/usbps_example.dir
+D:/PrjMig-Vitis_2024.1/tests/eclypse-z7/sw/ws/design_1_wrapper/ps7_cortexa9_0/domain_ps7_cortexa9_0/bsp/libsrc/build_configs/exmetadata/CMakeFiles/xadcps_example.dir
+D:/PrjMig-Vitis_2024.1/tests/eclypse-z7/sw/ws/design_1_wrapper/ps7_cortexa9_0/domain_ps7_cortexa9_0/bsp/libsrc/build_configs/exmetadata/CMakeFiles/edit_cache.dir
+D:/PrjMig-Vitis_2024.1/tests/eclypse-z7/sw/ws/design_1_wrapper/ps7_cortexa9_0/domain_ps7_cortexa9_0/bsp/libsrc/build_configs/exmetadata/CMakeFiles/rebuild_cache.dir
