@@ -1,12 +1,16 @@
 [submodule "scripts"]
 	path = scripts
-	url = ../../digilent/digilent-vitis-scripts
-[submodule "src/dpmutil/src/dpmutil"]
+	url = https://github.com/Digilent/digilent-vitis-scripts.git
+	branch = new_vitis/dev2024.1
+
+[submodule "src/calibration_reader/src/dpmutil"]
 	path = src/calibration_reader/src/dpmutil
 	url = https://github.com/digilent/dpmutil
+
 [submodule "src/mm2s_single_transfer_test/src/dpmutil"]
 	path = src/mm2s_single_transfer_test/src/dpmutil
 	url = https://github.com/digilent/dpmutil
+
 [submodule "src/s2mm_cyclic_transfer_test/src/dpmutil"]
 	path = src/s2mm_cyclic_transfer_test/src/dpmutil
 	url = https://github.com/digilent/dpmutil
