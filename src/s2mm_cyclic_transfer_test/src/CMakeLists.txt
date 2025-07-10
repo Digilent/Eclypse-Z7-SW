@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT
 cmake_minimum_required(VERSION 3.16)
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/Hello_worldExample.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/Empty_ApplicationExample.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/UserConfig.cmake)
 
 set(APP_NAME s2mm_cyclic_transfer_test)
@@ -12,7 +12,7 @@ enable_language(C ASM CXX)
 find_package(common)
 
 # Needs to be changed
-set(BASE_PATH_DRIVERS "<base-path-to-drivers>/eclypse-z7/sw/ws/<platform-name>/hw/sdt/drivers/")
+# set(BASE_PATH_DRIVERS "<base-path-to-drivers>/eclypse-z7/sw/ws/<platform-name>/hw/sdt/drivers/")
 
 collect(PROJECT_LIB_DEPS xilstandalone;xiltimer)
 collect(PROJECT_LIB_DEPS xil)

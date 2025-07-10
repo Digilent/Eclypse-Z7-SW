@@ -5,6 +5,9 @@
 		"\"__clang__\""
 	],
 	"USER_INCLUDE_DIRECTORIES" : [],
+	"USER_COMPILE_SOURCES" : [
+		"\"../awg_calibration.c\""
+	],
 	"USER_COMPILE_WARNINGS_ALL" : [
 		"-Wall"
 	],
@@ -37,5 +40,9 @@
 		"\"${CMAKE_SOURCE_DIR}/lscript.ld\""
 	],
 	"USER_LINK_OTHER_FLAGS" : [],
-	"mm2s_single_transfer_test" : "src\\design_1_wrapper\\design_1_wrapper.xsa"
+	"USER_COMPILE_RELAXATION" : [
+		"\"-Wl,--no-relax\""
+	],
+	"USER_COMPILE_GARBAGE" : [],
+	"mm2s_single_transfer_test" : "src\\design_1_wrappe\\design_1_wrappe.xsa"
 }
