@@ -5,6 +5,9 @@
 		"\"__clang__\""
 	],
 	"USER_INCLUDE_DIRECTORIES" : [],
+	"USER_COMPILE_SOURCES" : [
+		"\"main.c\""
+	],
 	"USER_COMPILE_WARNINGS_ALL" : [
 		"-Wall"
 	],
@@ -37,5 +40,5 @@
 		"\"${CMAKE_SOURCE_DIR}/lscript.ld\""
 	],
 	"USER_LINK_OTHER_FLAGS" : [],
-	"Eclypse-Z7-OOB" : "src\\design_1_wrapper\\design_1_wrapper.xsa"
+	"Eclypse-Z7-OOB" : "src\\design_1_wrappe\\design_1_wrappe.xsa"
 }

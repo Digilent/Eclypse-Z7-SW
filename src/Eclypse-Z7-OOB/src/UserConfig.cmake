@@ -27,6 +27,10 @@ set(USER_UNDEFINED_SYMBOLS
 
 set(USER_INCLUDE_DIRECTORIES
 )
+set(USER_COMPILE_SOURCES
+"main.c"
+"platform.c"
+)
 
 # -----------------------------------------
 
