@@ -40,5 +40,5 @@
 		"\"${CMAKE_SOURCE_DIR}/lscript.ld\""
 	],
 	"USER_LINK_OTHER_FLAGS" : [],
-	"Eclypse-Z7-OOB" : "src\\design_1_wrappe\\design_1_wrappe.xsa"
+	"Eclypse-Z7-OOB" : "src\\design_1_wrapper\\design_1_wrapper.xsa"
 }
