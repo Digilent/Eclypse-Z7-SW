@@ -11,3 +11,11 @@
 
 /Packages
 /.wsdata
+
+# ignore dfx_runtime.txt created by Vitis
+
+dfx_runtime.txt
+
+# ignore .Xil/ created by Vitis
+
+/.Xil
