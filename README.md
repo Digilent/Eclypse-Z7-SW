@@ -14,6 +14,7 @@ or
 
 > `vitis -s <path-to-scripts-repo>checkin.py`
 
+IMPORTANT! KNOWN BUG!
 
 After checkout, if you encounter build errors for the mm2s_single_transfer_test and s2mm_cyclic_transfer_test apps,
 it is likely because Vitis did not correctly recognize the path to the platform drivers.
