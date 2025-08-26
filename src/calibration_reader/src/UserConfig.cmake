@@ -30,13 +30,7 @@ set(USER_INCLUDE_DIRECTORIES
 )
 set(USER_COMPILE_SOURCES
 "../main.c"
-"../manual_trigger.c"
 "../platform.c"
-"../s2mm_transfer.c"
-"../scope_calibration.c"
-"../test_stream_source.c"
-"../trigger.c"
-"../zmod_scope_axi_configuration.c"
 "../dpmutil/dpmutil.c"
 "../dpmutil/I2CHAL.c"
 "../dpmutil/PlatformMCU.c"

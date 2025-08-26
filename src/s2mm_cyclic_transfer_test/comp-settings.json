@@ -6,7 +6,7 @@
 	],
 	"USER_INCLUDE_DIRECTORIES" : [],
 	"USER_COMPILE_SOURCES" : [
-		"\"../main.c\""
+		"\"main.c\""
 	],
 	"USER_COMPILE_WARNINGS_ALL" : [
 		"-Wall"
@@ -29,6 +29,10 @@
 	"USER_COMPILE_DEBUG_OTHER_FLAGS" : [],
 	"USER_COMPILE_VERBOSE" : [],
 	"USER_COMPILE_ANSI" : [],
+	"USER_COMPILE_RELAXATION" : [
+		"\"-Wl,--no-relax\""
+	],
+	"USER_COMPILE_GARBAGE" : [],
 	"USER_COMPILE_OTHER_FLAGS" : [],
 	"USER_LINK_NO_START_FILES" : [],
 	"USER_LINK_NO_DEFAULT_LIBS" : [],
@@ -40,9 +44,5 @@
 		"\"${CMAKE_SOURCE_DIR}/lscript.ld\""
 	],
 	"USER_LINK_OTHER_FLAGS" : [],
-	"USER_COMPILE_RELAXATION" : [
-		"\"-Wl,--no-relax\""
-	],
-	"USER_COMPILE_GARBAGE" : [],
-	"s2mm_cyclic_transfer_test" : "src\\design_1_wrappe\\design_1_wrappe.xsa"
+	"s2mm_cyclic_transfer_test" : "src\\design_1_wrapper\\design_1_wrapper.xsa"
 }
