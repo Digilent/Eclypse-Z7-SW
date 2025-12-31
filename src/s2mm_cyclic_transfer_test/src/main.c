@@ -246,8 +246,8 @@ int main () {
 	Pipe.Relays = GainTestRelays;
 	// Define the acquisition window
 	Pipe.BufferLength = 0x800;
-	// Note: With default settings, a single full 10 kHz wave should fit in the buffer
-	//       0x800 / 100 MS/s = 40.96 us => ~10.4 kHz
+	// Note: With default settings, a single full 50 kHz wave should fit in the buffer
+	//       0x800 / 100 MS/s = 20.48 us => ~48.8 kHz
 
 	InitializeStream(&Pipe);
 
