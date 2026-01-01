@@ -4,6 +4,8 @@
 #include "xaxidma.h"
 #include "xil_types.h"
 
+#define S2MM_BUFFER_MINIMUM_ALIGNMENT 0x20
+
 typedef struct {
 	XAxiDma Dma;
 	u32 NumBds;

@@ -74,7 +74,6 @@ void S2mmAttachBuffer (S2mmTransferHierarchy *InstPtr, UINTPTR Buffer, u32 Buffe
 	int Index = 0;
 	int Status = 0;
 	u32 BdSpaceBytes = 0;
-	u32 BdLength = 0;
 
 	DmaPtr = &(InstPtr->Dma);
 	RingPtr = XAxiDma_GetRxRing(DmaPtr);
@@ -82,13 +81,15 @@ void S2mmAttachBuffer (S2mmTransferHierarchy *InstPtr, UINTPTR Buffer, u32 Buffe
 	InstPtr->BufferBaseAddr = (u32*)Buffer;
 	InstPtr->BufferLength = BufferLength;
 
-	if ((InstPtr->BufferLength & 0x7ff) != 0) {
-		xil_printf("ERROR: Buffer length must be an integer multiple of 0x800\r\n");
+	if ((InstPtr->BufferLength & (S2MM_BUFFER_MINIMUM_ALIGNMENT - 1)) != 0) {
+		xil_printf("ERROR: Buffer length must be an integer multiple of 0x0\r\n");
 	}
+
+	const u32 BdLength = BufferLength * sizeof(u32); // InstPtr->MaxBurstLengthBytes;
 
 	// Allocate the memory space holding DMA block descriptors
 	// Note: Xilinx doesn't support dynamic allocation of aligned memory, so we need to allocate more memory than is actually needed in order to guarantee alignment
-	InstPtr->NumBds = RoundUpDivide(BufferLength * sizeof(u32), InstPtr->MaxBurstLengthBytes);
+	InstPtr->NumBds = 4;
 	BdSpaceBytes = (sizeof(XAxiDma_Bd) * (InstPtr->NumBds)) + (XAXIDMA_BD_MINIMUM_ALIGNMENT-sizeof(u32));
 	InstPtr->BdSpace = malloc(BdSpaceBytes);
 	// Get the address of the actual memory space that the Bds can fit into, following the alignment requirement
@@ -124,13 +125,8 @@ void S2mmAttachBuffer (S2mmTransferHierarchy *InstPtr, UINTPTR Buffer, u32 Buffe
 	BdCurPtr = BdPtr;
 	BdBufferPtr = Buffer;
 
+	// create four identical block descriptors; DMA queues three at a time, plus one for the processor to be checking
 	for (Index = 0; Index < FreeBdCount; Index++) {
-		// FIXME: Bd length always being the max length restricts transfers to buffer lengths that are integer multiples of MaxBurstLengthBytes.
-		// constraints on the BD size need to be determined, a minimum can be experimentally found by lowering block sizes until beats start
-		// getting stalled due to backpressure caused by DMA blocks waiting on scatter gather
-		// its possible this doesn't occur due to the dma scatter gather engine buffering two or three transactions ahead
-		BdLength = InstPtr->MaxBurstLengthBytes;
-
 		Status = XAxiDma_BdSetBufAddr(BdCurPtr, (UINTPTR)BdBufferPtr);
 		if (Status != XST_SUCCESS) {
 			xil_printf("ERROR: XAxiDma_BdSetBufAddr failed for s2mm instance 0x%08x, BD %d\r\n", InstPtr, Index);
@@ -142,9 +138,15 @@ void S2mmAttachBuffer (S2mmTransferHierarchy *InstPtr, UINTPTR Buffer, u32 Buffe
 		}
 
 		XAxiDma_BdSetCtrl(BdCurPtr, 0);
-		XAxiDma_BdSetId(BdCurPtr, BdBufferPtr);
+		XAxiDma_BdSetId(BdCurPtr, BdCurPtr);
 
-		BdBufferPtr += BdLength;
+		xil_printf("Created block descriptor %d\r\n", Index);
+		xil_printf("  BufAddr: %08x\r\n", XAxiDma_BdGetBufAddr(BdCurPtr));
+		xil_printf("  Length:  %d\r\n", BdLength);
+		xil_printf("  Ctrl:    %d\r\n", XAxiDma_BdGetCtrl(BdCurPtr));
+		xil_printf("  Id:      %08x\r\n", XAxiDma_BdGetId(BdCurPtr));
+
+		// BdBufferPtr += BdLength;
 		BdCurPtr = (XAxiDma_Bd *)XAxiDma_BdRingNext(RingPtr, BdCurPtr);
 	}
 
@@ -244,7 +246,7 @@ u32 *S2mmFindStartOfBuffer (S2mmTransferHierarchy *InstPtr) {
 		// Check if ActualLength shows up as both even and odd. Using the source monitor's traffic generator with
 		// even- and odd-valued level triggers should indicate this.
 		if (Status & XAXIDMA_BD_STS_RXEOF_MASK) {
-			ActualLength = XAxiDma_BdGetActualLength(BdPtr, ((InstPtr->MaxBurstLengthBytes*2)-1));
+			ActualLength = XAxiDma_BdGetActualLength(BdPtr, RingPtr->MaxTransferLen);
 			xil_printf("Last beat found:\r\n");
 			xil_printf("  BD base address: %08x\r\n", XAxiDma_BdGetBufAddr(BdPtr));
 			xil_printf("  BD actual length: %08x\r\n", ActualLength);

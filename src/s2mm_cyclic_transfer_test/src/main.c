@@ -100,6 +100,7 @@ typedef struct InputPipeline {
 	UserRegisters LevelTrigger;
 	ZmodScopeRelayConfig Relays;
 	u32 *RxBuffer;
+	u32 *RxBufferBase;
 	u32 BufferLength;
 	u32 TriggerPosition;
 	u32 TrigEnable;
@@ -165,7 +166,7 @@ XStatus DoAcquisition(InputPipeline *InstPtr) {
 		float ch2_mV = 1000.0f * RawDataToVolts(RxBuffer[index], 1, ZMOD_SCOPE_RESOLUTION, RelaysPtr->Ch2Gain);
 		const u16 ch1_raw = ChannelData(0, RxBuffer[index], ZMOD_SCOPE_RESOLUTION);
 		const u16 ch2_raw = ChannelData(1, RxBuffer[index], ZMOD_SCOPE_RESOLUTION);
-		xil_printf("@%08x\t%08x\t%04x\t%04x\t%d\t%d\r\n", (u32)RxBuffer + index*sizeof(u32), RxBuffer[index], ch1_raw, ch2_raw, (int)ch1_mV, (int)ch2_mV);
+		xil_printf("[%d]\t@%08x\t%08x\t%04x\t%04x\t%d\t%d\r\n", index, (u32)RxBuffer + index*sizeof(u32), RxBuffer[index], ch1_raw, ch2_raw, (int)ch1_mV, (int)ch2_mV);
 	}
 
 	return XST_SUCCESS;
@@ -195,9 +196,17 @@ XStatus InitializeStream (InputPipeline *InstPtr) {
 	xil_printf("TestMode: %d\r\n", TestMode);
 
 	// Initialize the buffer for receiving data from PL
+	InstPtr->RxBufferBase = NULL;
 	InstPtr->RxBuffer = NULL;
 
-	InstPtr->RxBuffer = malloc(InstPtr->BufferLength * sizeof(u32));
+	InstPtr->RxBufferBase = malloc(InstPtr->BufferLength * sizeof(u32) + S2MM_BUFFER_MINIMUM_ALIGNMENT - 1);
+	
+	if (((u32)InstPtr->RxBufferBase & (S2MM_BUFFER_MINIMUM_ALIGNMENT - 1)) == 0) {
+		InstPtr->RxBuffer = InstPtr->RxBufferBase;
+	} else {
+		InstPtr->RxBuffer = (u32*)(((u32)InstPtr->RxBufferBase & ~(S2MM_BUFFER_MINIMUM_ALIGNMENT - 1)) + S2MM_BUFFER_MINIMUM_ALIGNMENT);
+	}
+	
 	if (InstPtr->RxBuffer == NULL) {
 		xil_printf("ERROR: Buffer allocation failed, check heap size in lscript.ld\r\n");
 		return XST_FAILURE;
@@ -244,10 +253,11 @@ int main () {
 	ZmodScopeRelayConfig GainTestRelays = {1, 0, 0, 0};
 	ZmodScopeRelayConfig HighGainDcCoupling = {1, 1, 1, 1};
 	Pipe.Relays = GainTestRelays;
+
 	// Define the acquisition window
-	Pipe.BufferLength = 0x800;
+	Pipe.BufferLength = 0x800; // Buffer length must be a multiple of 0x20 - discard unwanted samples manually.
 	// Note: With default settings, a single full 50 kHz wave should fit in the buffer
-	//       0x800 / 100 MS/s = 20.48 us => ~48.8 kHz
+	//       0x800 / 100 MS/s = 20.48 us => ~50 kHz
 
 	InitializeStream(&Pipe);
 
@@ -264,7 +274,7 @@ int main () {
 		DoAcquisition(&Pipe);
 	}
 
-	free(Pipe.RxBuffer);
+	free(Pipe.RxBufferBase);
 	xil_printf("Exit\r\n\r\n");
     //MinMaxAcquisition(&Pipe, CouplingTestRelays);
     //MinMaxAcquisition(&Pipe, GainTestRelays);
