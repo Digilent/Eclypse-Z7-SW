@@ -41,7 +41,7 @@ u32 TriggerGetIdle (TriggerControl *InstPtr) {
 *
 *****************************************************************************/
 void TriggerSetPosition (TriggerControl *InstPtr, u32 BufferLength, u32 TriggerPosition) {
-	const u32 PrebufferLength = TriggerPosition;
+	const u32 PrebufferLength = BufferLength; // Ought to be TriggerPosition (given assumptions), but was seeing stale data from previous acquisitions making it into the capture
 	const u32 TrigToLastLength = BufferLength - TriggerPosition;
 	TriggerControl_WriteReg(InstPtr->BaseAddr, TRIGGER_CONTROL_TRIGGERTOLASTBEATS_REG_OFFSET, TrigToLastLength);
 	TriggerControl_WriteReg(InstPtr->BaseAddr, TRIGGER_CONTROL_PREBUFFERBEATS_REG_OFFSET, PrebufferLength);

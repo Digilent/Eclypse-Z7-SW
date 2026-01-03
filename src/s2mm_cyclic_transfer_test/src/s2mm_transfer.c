@@ -46,16 +46,6 @@ void S2mmInitialize (S2mmTransferHierarchy *InstPtr, const u32 DmaDeviceId) {
 *       requirement imposed by the AXI DMA, and theoretically any block size could be used. However, some minimum burst size exists such that
 *       AXI4-full protocol overhead significantly affects the bandwidth of the transfer. It may be possible to use short bursts as long as the
 *       following burst is long enough for the scatter gather interface to keep up.
-*       FIXME: It may be possible to use only a single block descriptor with cyclic mode. It should be determined whether the DMA engine will
-*              repeatedly fetch the same block.
-*		FIXME: The minimum block size that can be consistently supported should be experimentally determined.
-*		FIXME: Currently, the DMA core must be reset in order to cancel any blocks still pending after the final block in an arbitrarily-long
-*		       transfer has been received. These blocks must be submitted to hardware in order since it is unknown while the final block is in flight
-*		       whether it is actually final or not, it is unknown whether the next acquisition will reuse the same buffer, and the blocks must be
-*		       available to hardware to prefetch before the block before them is complete.
-*		FIXME: At time of writing, buffer length is restricted to values of N * MaxBurstLengthBytes, where N is an integer and MaxBurstLengthBytes
-*		       is 256x64/8=1024 bytes (BurstSize x DataWidth bits).
-*		       If buffer length doesn't meet this requirement, S2mmFindStartOfBuffer may not return the correct address in some edge cases.
 *		FIXME: It should be explored whether multiple buffers can easily be attached and switched out (perhaps by taking advantage of multiple Rx rings)
 *			   in order to allow an acquisition to occur at the same time as a previous acquisition is being transferred to the host.
 *		FIXME: Errors should be returned in several bad-status cases (eg if malloc or some XAxiDma API call fail).
@@ -193,7 +183,6 @@ void S2mmCleanup(S2mmTransferHierarchy *InstPtr) {
 *
 * @note This function should be called prior to enabling all upstream IP, as ready can remain high while the transfer is inactive,
 * 	    allowing data to flow into buffers, corrupting the first few samples of an acquisition.
-* 	    FIXME: Consider whether cyclic mode should be set when the ring is first being configured.
 * 	    FIXME: Return error instead of printing here.
 *
 *****************************************************************************/
@@ -234,8 +223,6 @@ u32 *S2mmFindStartOfBuffer (S2mmTransferHierarchy *InstPtr) {
 	u32 *StartOfBuffer = NULL;
 
 	BdPtr = (XAxiDma_Bd*)RingPtr->FirstBdAddr; // this is kind of weird. FIXME find out why this value isn't the one getting returned from BdRingFree
-
-//	NumBd = XAxiDma_BdRingFromHw(RingPtr, XAXIDMA_ALL_BDS, &BdPtr); // potentially use this to clear the processed status fields, if NumBd > 0 then RXEOF exists somewhere, maybe in the HwTail?
 
 	for (u32 i = 0; i < InstPtr->NumBds; i++) {
 		Xil_DCacheInvalidateRange((UINTPTR)BdPtr, XAXIDMA_BD_NUM_WORDS * sizeof(u32));

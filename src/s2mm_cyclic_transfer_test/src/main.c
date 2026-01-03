@@ -30,7 +30,6 @@
 
 // Function definitions
 
-// FIXME: only the actual significant bits should be considered. the rest are discarded.
 // the result of the multiply in calibration dsp hardware might push through some extraneous bits below the sample, but we discard them here
 u16 ChannelData(u8 channel, u32 data, u8 resolution) {
 	//	Channel1 -> cDataAxisTdata[31:16]
@@ -108,6 +107,9 @@ typedef struct InputPipeline {
 	u16 Ch2Level;
 } InputPipeline;
 
+// Use a counter in PL to feed the DMA, rather than scope data, to check continuity of the transfer
+// #define RUN_DMA_TEST
+
 XStatus DoAcquisition(InputPipeline *InstPtr) {
 	// Initialize device drivers
 	S2mmTransferHierarchy *S2mmPtr = &(InstPtr->S2mm);
@@ -183,7 +185,6 @@ XStatus InitializeStream (InputPipeline *InstPtr) {
 	ZmodScopeRelayConfig *RelaysPtr = &(InstPtr->Relays);
 
 	// Get the factory calibration coefficients and apply them to the lowlevel IP
-	// FIXME mallocing of the syzygy dna name strings is currently failing
 	ZmodScope_CalibrationCoefficients factory, _unused_;
 	if (ZmodScope_ReadCoefficientsFromDna(SCOPE_PORT, &factory, &_unused_) != XST_SUCCESS) {
 		xil_printf("ERROR: failed to read Zmod Scope calibration coefficients\r\n");
@@ -199,6 +200,7 @@ XStatus InitializeStream (InputPipeline *InstPtr) {
 	InstPtr->RxBufferBase = NULL;
 	InstPtr->RxBuffer = NULL;
 
+	// Align buffer to 0x20 boundary
 	InstPtr->RxBufferBase = malloc(InstPtr->BufferLength * sizeof(u32) + S2MM_BUFFER_MINIMUM_ALIGNMENT - 1);
 	
 	if (((u32)InstPtr->RxBufferBase & (S2MM_BUFFER_MINIMUM_ALIGNMENT - 1)) == 0) {
@@ -217,7 +219,12 @@ XStatus InitializeStream (InputPipeline *InstPtr) {
 	// Create a Dma Bd Ring and map the buffer to it
 	S2mmAttachBuffer(S2mmPtr, (UINTPTR)InstPtr->RxBuffer, InstPtr->BufferLength);
 
+	#ifdef RUN_DMA_TEST
+	const u8 Freerun = 1, Enable = 1;
+	AxiStreamSourceMonitorSetControl(TrafficGenPtr, Enable, Freerun, SWITCH_SOURCE_GENERATOR);
+	#else
 	AxiStreamSourceMonitorSetSelect(TrafficGenPtr, SWITCH_SOURCE_SCOPE);
+	#endif
 
 	xil_printf("Initialization done\r\n");
 
@@ -265,17 +272,23 @@ int main () {
 	// Prebuffer 100 samples before the trigger condition
 	Pipe.TriggerPosition = 100;
 	// Trigger at 0.0 V rising edge on channel 1
+	#ifdef RUN_DMA_TEST
+	Pipe.Ch1Level = 0;
+	Pipe.Ch2Level = 0xDEAD;
+	Pipe.TrigEnable = 0b01000; // Manual trigger
+	#else
 	Pipe.Ch1Level = VoltsToTriggerLevel(0.0f, 14, GainTestRelays.Ch1Gain);
 	Pipe.Ch2Level = VoltsToTriggerLevel(0.0f, 14, GainTestRelays.Ch2Gain);
 	Pipe.TrigEnable = 0b00010;
+	#endif
 
-	for (int i=0; i < 4; i++) {
+	const u32 NumAcqs = 4;
+
+	for (int i = 0; i < NumAcqs; i++) {
 		xil_printf("Starting acq %d\r\n", i);
 		DoAcquisition(&Pipe);
 	}
 
 	free(Pipe.RxBufferBase);
 	xil_printf("Exit\r\n\r\n");
-    //MinMaxAcquisition(&Pipe, CouplingTestRelays);
-    //MinMaxAcquisition(&Pipe, GainTestRelays);
 }
